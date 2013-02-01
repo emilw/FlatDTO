@@ -17,7 +17,7 @@ namespace TestProject
 
             var factory = new FlatDTO.FlatDTOFactory();
 
-            var dto1 = factory.Create(data.ToArray(), new string[] { "Property", "Thingy", "Prio" });
+            //var dto1 = factory.Create(data.ToArray(), new string[] { "Property", "Thingy", "Prio" });
 
             //var dto2 = factory.Create(data.ToArray(), new string[] { "Property1" });
 

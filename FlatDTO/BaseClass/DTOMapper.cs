@@ -12,20 +12,20 @@ namespace FlatDTO.BaseClass
 
         public string Key { get; set; }
         public DateTime CreatedDateTime { get; set; }
-        public DTO[] Map(object[] dataObject)
+        public T[] Map<T>(object[] dataObject)
         {
-            var result = new List<DTO>();
+            var result = new List<T>();
 
             foreach (var data in dataObject)
             {
-                var dto = (DTO)Activator.CreateInstance(DestinationType);
+                var dto = Activator.CreateInstance(DestinationType);
                 dto = Map(data, dto);
-                result.Add(dto);
+                result.Add((T)dto);
             }
 
             return result.ToArray();
         }
 
-        public abstract DTO Map(object sourceDataObject, DTO destinationObject);
+        public abstract object Map(object sourceDataObject, object destinationObject);
     }
 }

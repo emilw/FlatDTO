@@ -13,7 +13,15 @@ namespace FlatDTO
         }
         private Dictionary<string, BaseClass.DTOMapper> MapperList { get; set; }
 
-        private BaseClass.DTOMapper GetDTOMapper(object[] dataObject, string[] properties)
+        public Dictionary<string, BaseClass.DTOMapper> CurrentListOfMappers
+        {
+            get
+            {
+                return MapperList;
+            }
+        }
+
+        private BaseClass.DTOMapper GetDTOMapper<T>(object[] dataObject, string[] properties)
         {
             var type = dataObject[0].GetType();
             string key = type.FullName;
@@ -24,24 +32,33 @@ namespace FlatDTO
 
             if (!MapperList.ContainsKey(key))
             {
-                mapper = MapperEngine.CreateMapper(type, properties);
+                var mapperEngine = new MapperEngine();
+                mapper = mapperEngine.CreateMapper<T>(type, properties);
                 mapper.Key = key;
                 mapper.CreatedDateTime = DateTime.Now;
                 MapperList.Add(key, mapper);
+                
+                if(Compiling != null)
+                    Compiling(key, new EventArgs());
             }
             else
             {
                 mapper = MapperList[key];
+                if(CacheHit != null)
+                    CacheHit(key, new EventArgs());
             }
 
             return mapper;
         }
 
-        public FlatDTO.BaseClass.DTO[] Create(object[] dataObject, string[] properties)
+        public T[] Create<T>(object[] dataObject, string[] properties)
         {
-            var mapper = GetDTOMapper(dataObject, properties);
+            var mapper = GetDTOMapper<T>(dataObject, properties);
 
-            return mapper.Map(dataObject);
+            return mapper.Map<T>(dataObject);
         }
+
+        public event EventHandler Compiling;
+        public event EventHandler CacheHit;
     }
 }

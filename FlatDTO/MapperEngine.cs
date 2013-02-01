@@ -7,22 +7,35 @@ using System.Reflection;
 
 namespace FlatDTO
 {
-    public static class MapperEngine
+    public class MapperEngine
     {
-        public static FlatDTO.BaseClass.DTOMapper CreateMapper(Type type, string[] properties)
+        private string _typeName;
+
+        public BaseClass.DTOMapper CreateMapper<T>(Type type, string[] properties)
         {
             var propertyInfos = GetPropertiesToUse(type, properties);
 
-            var destinationType = CreateDTOType(type, propertyInfos);
+            var destinationType = CreateDTOType<T>(type, propertyInfos);
 
-            var mapper = CreateMapper(type, destinationType, propertyInfos);
+            var mapper = CreateMapper<T>(type, destinationType, propertyInfos);
 
             return mapper;
         }
 
-        private static BaseClass.DTOMapper CreateMapper(Type sourceType, Type destinationType, PropertyInfo[] properties)
+        private string TypeName
         {
-            var objectFullName = destinationType.FullName + "MAPPER";
+            get
+            {
+                if (string.IsNullOrEmpty(_typeName))
+                    _typeName = "DTO_" + Guid.NewGuid().ToString();
+
+                return _typeName;
+            }
+        }
+
+        private BaseClass.DTOMapper CreateMapper<T>(Type sourceType, Type destinationType, PropertyInfo[] properties)
+        {
+            var objectFullName = TypeName + "MAPPER";
 
             var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new System.Reflection.AssemblyName(objectFullName), System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
             var dllName = objectFullName + ".dll";
@@ -34,7 +47,7 @@ namespace FlatDTO
             //public abstract object Map(object typeA, object typeB);
             var methodBuilder = typeBuilder.DefineMethod("Map", System.Reflection.MethodAttributes.Public | System.Reflection.MethodAttributes.ReuseSlot |
                                             System.Reflection.MethodAttributes.Virtual | System.Reflection.MethodAttributes.HideBySig,
-                                            typeof(BaseClass.DTO), new Type[] { typeof(object), typeof(BaseClass.DTO) });
+                                            typeof(object), new Type[] { typeof(object), typeof(object) });
 
             ILGenerator il = methodBuilder.GetILGenerator();
 
@@ -99,7 +112,7 @@ namespace FlatDTO
         } 
 
 
-        private static Type CreateDTOType(Type type, PropertyInfo[] properties)
+        private Type CreateDTOType<T>(Type type, PropertyInfo[] properties)
         {
             var objectFullName = type.FullName;
             foreach (var property in properties)
@@ -110,7 +123,7 @@ namespace FlatDTO
             var moduleBuilder = assemblyBuilder.DefineDynamicModule(dllName);
 
             //Define the type
-            var typeBuilder = moduleBuilder.DefineType(objectFullName, System.Reflection.TypeAttributes.Public, typeof(FlatDTO.BaseClass.DTO));
+            var typeBuilder = moduleBuilder.DefineType(objectFullName, System.Reflection.TypeAttributes.Public, typeof(T));
             //var typeBuilder = _moduleBuilder.DefineType(_dataObjectType.FullName, TypeAttributes.Public);
             //Set the parent type to the type
             //typeBuilder.SetParent(this.resolveType(_dataObjectType.ParentType.FullName));
