@@ -45,7 +45,7 @@
   <ItemGroup>
     <Compile Include="CreateMethodReflectionEmit.cs" />
     <Compile Include="DummyClass.cs" />
-    <Compile Include="ExampleClass.cs" />
+    <Compile Include="MyBaseDTO.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

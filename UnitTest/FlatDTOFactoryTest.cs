@@ -73,5 +73,35 @@ namespace UnitTest
             _cacheHit = _cacheHit + 1;
         }
 
+
+        [TestMethod]
+        public void TestThatTheCacheIsAtLeast10TimesFasterThenCompiling()
+        {
+            var data = Mockup.Data.GetSimpleOneLevelMockupData();
+            var propertyString = Mockup.Data.GetSimpleOneLevelMockupDataPropertyStrings();
+
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            var start = DateTime.Now;
+            factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
+            var resultBase = GetDiffms(start, DateTime.Now)/10;
+            
+            start = DateTime.Now;
+            factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
+            var result = GetDiffms(start, DateTime.Now);
+
+            Assert.IsTrue(result < resultBase, "The timing result is {0}, the base is {1}", result, resultBase);
+            start = DateTime.Now;
+            factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
+            result = GetDiffms(start, DateTime.Now);
+            Assert.IsTrue(result < resultBase, "The timing result is {0}, the base is {1}", result, resultBase);
+            
+        }
+
+        private long GetDiffms(DateTime start, DateTime stop)
+        {
+            return (stop.Ticks - start.Ticks) / 10000;
+        }
+
     }
 }
