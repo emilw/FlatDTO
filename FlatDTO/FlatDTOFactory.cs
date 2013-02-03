@@ -21,6 +21,14 @@ namespace FlatDTO
             }
         }
 
+        public Type[] CurrentListOfDTOTypes
+        {
+            get
+            {
+                return MapperList.Values.Select(x => x.DestinationType).ToArray();
+            }
+        }
+
         private BaseClass.DTOMapper GetDTOMapper<T>(object[] dataObject, string[] properties)
         {
             var type = dataObject[0].GetType();

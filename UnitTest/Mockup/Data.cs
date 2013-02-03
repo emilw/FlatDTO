@@ -7,11 +7,11 @@ namespace UnitTest.Mockup
 {
     public static class Data
     {
-        public static DummyClass[] GetSimpleOneLevelMockupData()
+        public static FlatDataType[] GetSimpleOneLevelMockupData()
         {
-            var data = new List<DummyClass>();
-            data.Add(new DummyClass() { StringValue = "prop1", DecimalValue = 1, IntegerValue = 2 });
-            data.Add(new DummyClass() { StringValue = "prop2", DecimalValue = 100, IntegerValue = 3 });
+            var data = new List<FlatDataType>();
+            data.Add(new FlatDataType() { StringValue = "prop1", DecimalValue = 1, IntegerValue = 2 });
+            data.Add(new FlatDataType() { StringValue = "prop2", DecimalValue = 100, IntegerValue = 3 });
 
             return data.ToArray();
         }
@@ -25,7 +25,7 @@ namespace UnitTest.Mockup
             return new string[] { stringPropertyName, decimalPropertyName, integerPropertyName };
         }
 
-        public class DummyClass
+        public class FlatDataType
         {
             public string StringValue { get; set; }
             public decimal DecimalValue { get; set; }
@@ -33,9 +33,48 @@ namespace UnitTest.Mockup
 
         }
 
-        public class MyDTO
+        public class DTOBase
         {
 
+        }
+
+        //Advance data
+        public static ComplexDataType[] GetComplexTwoLevelMockupData()
+        {
+            var data = new List<ComplexDataType>();
+            var comp1 = new ComplexPropertyLevel2() { StringValue = "ComlpexLevel2" };
+            var comp2 = new ComplexPropertyLevel1() { ComplexProperty = comp1, StringValue = "ComplexLevel1" };
+            data.Add(new ComplexDataType() { StringValue = "prop1", DecimalValue = 1, IntegerValue = 2, ComplexProperty = comp2});
+            data.Add(new ComplexDataType() { StringValue = "prop2", DecimalValue = 100, IntegerValue = 3, ComplexProperty = comp2 });
+
+            return data.ToArray();
+        }
+
+        public static string[] GetComplexTwoLevelMockupDataPropertyStrings()
+        {
+            var stringPropertyName = "StringValue";
+            var decimalPropertyName = "DecimalValue";
+            var integerPropertyName = "IntegerValue";
+            var stringProperetyNameComplex1 = "ComplexProperty.StringValue";
+            var stringProperetyNameComplex2 = "ComplexProperty.ComplexProperty.StringValue";
+
+            return new string[] { stringPropertyName, decimalPropertyName, integerPropertyName, stringProperetyNameComplex1, stringProperetyNameComplex2 };
+        }
+
+        public class ComplexDataType : FlatDataType
+        {
+            public ComplexPropertyLevel1 ComplexProperty { get; set; }
+        }
+
+        public class ComplexPropertyLevel1
+        {
+            public ComplexPropertyLevel2 ComplexProperty { get; set; }
+            public string StringValue { get; set; }
+        }
+
+        public class ComplexPropertyLevel2
+        {
+            public string StringValue { get; set; }
         }
     }
 }

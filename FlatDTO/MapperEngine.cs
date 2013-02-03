@@ -10,6 +10,8 @@ namespace FlatDTO
     public class MapperEngine
     {
         private string _typeName;
+        private AssemblyBuilder _assemblyBuilder;
+        private ModuleBuilder _moduleBuilder;
 
         public BaseClass.DTOMapper CreateMapper<T>(Type type, string[] properties)
         {
@@ -22,24 +24,38 @@ namespace FlatDTO
             return mapper;
         }
 
+        private ModuleBuilder ModuleBuilder
+        {
+            get
+            {
+                if (_assemblyBuilder == null)
+                {
+                    _assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new System.Reflection.AssemblyName(TypeName), System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
+                    _moduleBuilder = _assemblyBuilder.DefineDynamicModule(TypeName + ".dll");
+                }
+
+                return _moduleBuilder;
+            }
+        }
+
         private string TypeName
         {
             get
             {
                 if (string.IsNullOrEmpty(_typeName))
-                    _typeName = "DTO_" + Guid.NewGuid().ToString();
+                    _typeName = "FlatDTO" + Guid.NewGuid().ToString();
 
                 return _typeName;
             }
         }
 
-        private BaseClass.DTOMapper CreateMapper<T>(Type sourceType, Type destinationType, PropertyInfo[] properties)
+        private BaseClass.DTOMapper CreateMapper<T>(Type sourceType, Type destinationType, List<Tuple<string, List<PropertyInfo>>> properties)
         {
             var objectFullName = TypeName + "MAPPER";
 
-            var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new System.Reflection.AssemblyName(objectFullName), System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
-            var dllName = objectFullName + ".dll";
-            var moduleBuilder = assemblyBuilder.DefineDynamicModule(dllName);
+            //var assemblyBuilder = AssemblyBuilder;//AppDomain.CurrentDomain.DefineDynamicAssembly(new System.Reflection.AssemblyName(objectFullName), System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
+            //var dllName = objectFullName + ".dll";
+            var moduleBuilder = ModuleBuilder;//assemblyBuilder.DefineDynamicModule(dllName);
 
             //Define the type
             var typeBuilder = moduleBuilder.DefineType(objectFullName, System.Reflection.TypeAttributes.Public, typeof(BaseClass.DTOMapper));
@@ -64,28 +80,33 @@ namespace FlatDTO
             /*il.Emit(OpCodes.Callvirt, typeof(TypeB).GetMethod("get_StringB"));
             il.Emit(OpCodes.Callvirt,  typeof(TypeA).GetMethod("set_StringA"));*/
 
-            foreach (var property in properties)
+            foreach (var propertyList in properties)
             {
                 il.Emit(OpCodes.Ldloc_1);
                 il.Emit(OpCodes.Ldloc_0);
                 /*il.Emit(OpCodes.Callvirt, sourceType.GetProperty("Property").GetGetMethod());
                 il.Emit(OpCodes.Callvirt, destinationType.GetProperty("Property").GetSetMethod());*/
-                il.Emit(OpCodes.Callvirt, property.GetGetMethod());
-                il.Emit(OpCodes.Callvirt, destinationType.GetProperty(property.Name).GetSetMethod());
+                
+                foreach (var property in propertyList.Item2)
+                {
+                    il.Emit(OpCodes.Callvirt, property.GetGetMethod());
+                }
+
+                il.Emit(OpCodes.Callvirt, destinationType.GetProperty(propertyList.Item1).GetSetMethod());
 
             }
 
             //il.Emit(OpCodes.)
-            il.Emit(OpCodes.Ldstr, "The I.M implementation of C");
-            il.Emit(OpCodes.Call, typeof(Console).GetMethod("WriteLine",
-                new Type[] { typeof(string) }));
+            //il.Emit(OpCodes.Ldstr, "The I.M implementation of C");
+            //il.Emit(OpCodes.Call, typeof(Console).GetMethod("WriteLine",
+            //    new Type[] { typeof(string) }));
 
             il.Emit(OpCodes.Ldloc_1);
             il.Emit(OpCodes.Ret);
 
             var type = typeBuilder.CreateType();
 
-            assemblyBuilder.Save(dllName);
+            //assemblyBuilder.Save(dllName);
 
             var objectToRun = (BaseClass.DTOMapper)Activator.CreateInstance(type);
 
@@ -97,36 +118,46 @@ namespace FlatDTO
 
         }
 
-        private static System.Reflection.PropertyInfo[] GetPropertiesToUse(Type type, string[] propertiesToUse)
+        private static List<Tuple<string,List<PropertyInfo>>> GetPropertiesToUse(Type type, string[] propertyPath)
         {
-            var properties = type.GetProperties();
-            var result = new List<System.Reflection.PropertyInfo>();
 
-            foreach (var property in properties)
+            var result = new List<Tuple<string, List<PropertyInfo>>>();
+
+            foreach(var path in propertyPath)
             {
-                if (propertiesToUse.Where(x => x == property.Name).FirstOrDefault() != null)
-                    result.Add(property);
+                var key = path.Replace('.', '_');
+
+                var properties = path.Split('.');
+                var activeType = type;
+                var propertyInfoList = new List<PropertyInfo>();
+
+                foreach (var property in properties)
+                {
+                    var propertyInfo = activeType.GetProperty(property);
+                    if (propertyInfo == null)
+                        throw new Exception(string.Format("The property {0} does not exist for type {1}", property, activeType));
+                    
+                    propertyInfoList.Add(propertyInfo);
+                    activeType = propertyInfo.PropertyType;
+                }
+
+                result.Add(new Tuple<string, List<PropertyInfo>>(key, propertyInfoList));
             }
 
-            return result.ToArray();
-        } 
+            return result;
+        }
 
 
-        private Type CreateDTOType<T>(Type type, PropertyInfo[] properties)
+        private Type CreateDTOType<T>(Type type, List<Tuple<string, List<PropertyInfo>>> properties)
         {
-            var objectFullName = type.FullName;
-            foreach (var property in properties)
-                objectFullName = objectFullName + property.Name;
+            var objectFullName = TypeName;
 
-            var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new System.Reflection.AssemblyName(objectFullName), AssemblyBuilderAccess.RunAndSave);
-            var dllName = objectFullName + ".dll";
-            var moduleBuilder = assemblyBuilder.DefineDynamicModule(dllName);
+            //var assemblyBuilder = AssemblyBuilder;//AppDomain.CurrentDomain.DefineDynamicAssembly(new System.Reflection.AssemblyName(objectFullName), AssemblyBuilderAccess.RunAndSave);
+            //var dllName = objectFullName + ".dll";
+            var moduleBuilder = ModuleBuilder;//_assemblyBuilder.DefineDynamicModule(dllName);
 
             //Define the type
             var typeBuilder = moduleBuilder.DefineType(objectFullName, System.Reflection.TypeAttributes.Public, typeof(T));
-            //var typeBuilder = _moduleBuilder.DefineType(_dataObjectType.FullName, TypeAttributes.Public);
-            //Set the parent type to the type
-            //typeBuilder.SetParent(this.resolveType(_dataObjectType.ParentType.FullName));
 
             //Go through all the parameters
             foreach (var prop in properties)
@@ -134,13 +165,13 @@ namespace FlatDTO
                 var attributes = new List<KeyValuePair<Type, object[]>>();
 
                 //Build the property
-                buildProperty(typeBuilder, prop.Name, prop.PropertyType, attributes);
+                buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().PropertyType, attributes);
             }
 
             //Create the type
             var newType = typeBuilder.CreateType();
 
-            assemblyBuilder.Save(dllName);
+            //assemblyBuilder.Save(dllName);
 
             return newType;
         }

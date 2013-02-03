@@ -11,7 +11,7 @@ namespace UnitTest
     {
 
         [TestMethod]
-        public void RunMapperFlatEntityToFlatDTOWithSimplePropertiesInLevel1()
+        public void RunMapperFlatEntityToFlatDTOWithSimplePropertiesInLevel0()
         {
 
             var data = Mockup.Data.GetSimpleOneLevelMockupData();
@@ -20,7 +20,7 @@ namespace UnitTest
 
             var propertyString = Mockup.Data.GetSimpleOneLevelMockupDataPropertyStrings();
             
-            var dtoList = factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
+            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
 
             Assert.IsTrue(dtoList.Count() == 2);
 
@@ -28,6 +28,41 @@ namespace UnitTest
             Assert.IsTrue(((string)value.GetType().GetProperty(propertyString[0]).GetValue(value, null)).Equals(data[0].StringValue, StringComparison.InvariantCultureIgnoreCase), "The string property was not correct");
             Assert.IsTrue(((decimal)value.GetType().GetProperty(propertyString[1]).GetValue(value, null)) == data[0].DecimalValue, "The decimal property was not correct");
             Assert.IsTrue(((int)value.GetType().GetProperty(propertyString[2]).GetValue(value, null)) == data[0].IntegerValue, "The int property was not correct");
+        }
+
+        [TestMethod]
+        public void RunMapperComplexEntityToFlatDTOWithComplexPropertiesLevel1And2()
+        {
+
+            var data = Mockup.Data.GetComplexTwoLevelMockupData();
+
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            var propertyString = Mockup.Data.GetComplexTwoLevelMockupDataPropertyStrings();
+
+            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+
+            Assert.IsTrue(dtoList.Count() == 2);
+
+            var value = dtoList[0];
+            var rootType = value.GetType();
+            Assert.IsTrue(((string)rootType.GetProperty(propertyString[0]).GetValue(value, null)).Equals(data[0].StringValue, StringComparison.InvariantCultureIgnoreCase), "The string property was not correct");
+            Assert.IsTrue(((decimal)rootType.GetProperty(propertyString[1]).GetValue(value, null)) == data[0].DecimalValue, "The decimal property was not correct");
+            Assert.IsTrue(((int)rootType.GetProperty(propertyString[2]).GetValue(value, null)) == data[0].IntegerValue, "The int property was not correct");
+
+            //Get the complex property
+            var propertyPath = propertyString[3].Replace(".", "_");
+
+            var property = rootType.GetProperty(propertyPath);
+
+            Assert.IsTrue(((string)property.GetValue(value, null)).Equals(data[0].ComplexProperty.StringValue, StringComparison.InvariantCultureIgnoreCase), "The value on Complex type on level 1 do not match");
+
+            propertyPath = propertyString[4].Replace(".", "_");
+
+            property = rootType.GetProperty(propertyPath);
+
+            Assert.IsTrue(((string)property.GetValue(value, null)).Equals(data[0].ComplexProperty.ComplexProperty.StringValue, StringComparison.InvariantCultureIgnoreCase), "The value on Complex type on level 2 do not match");
+
         }
 
         [TestMethod]
@@ -44,13 +79,13 @@ namespace UnitTest
             factory.Compiling += new EventHandler(factory_Compiling);
 
             //Run 1
-            factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
 
             //Run 2
-            factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
 
             //Run 3
-            factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
 
             Assert.IsTrue(_compileHit == 1, "The cache event was not fired");
             Assert.IsTrue(_cacheHit == 2, "The cache event was not fired");
@@ -75,7 +110,7 @@ namespace UnitTest
 
 
         [TestMethod]
-        public void TestThatTheCacheIsAtLeast10TimesFasterThenCompiling()
+        public void TestThatTheCacheIsFasterThenCompiling()
         {
             var data = Mockup.Data.GetSimpleOneLevelMockupData();
             var propertyString = Mockup.Data.GetSimpleOneLevelMockupDataPropertyStrings();
@@ -83,19 +118,14 @@ namespace UnitTest
             var factory = new FlatDTO.FlatDTOFactory();
 
             var start = DateTime.Now;
-            factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
-            var resultBase = GetDiffms(start, DateTime.Now)/10;
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            var resultBase = GetDiffms(start, DateTime.Now);
             
             start = DateTime.Now;
-            factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
             var result = GetDiffms(start, DateTime.Now);
 
-            Assert.IsTrue(result < resultBase, "The timing result is {0}, the base is {1}", result, resultBase);
-            start = DateTime.Now;
-            factory.Create<Mockup.Data.MyDTO>(data.ToArray(), propertyString);
-            result = GetDiffms(start, DateTime.Now);
-            Assert.IsTrue(result < resultBase, "The timing result is {0}, the base is {1}", result, resultBase);
-            
+            Assert.IsTrue(result < resultBase, "The timing cache result is {0}, the compile result is {1}", result, resultBase);
         }
 
         private long GetDiffms(DateTime start, DateTime stop)
