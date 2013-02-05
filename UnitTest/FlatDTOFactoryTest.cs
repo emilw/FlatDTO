@@ -31,6 +31,29 @@ namespace UnitTest
         }
 
         [TestMethod]
+        [ExpectedException(typeof(FlatDTO.Exception.PropertyDoNotExistException))]
+        public void RunMapperFlatEntityToFlatDTOWithSimplePropertiesInLevel0WithNonExistingProperty()
+        {
+
+            var data = Mockup.Data.GetSimpleOneLevelMockupData();
+
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            var propertyString = Mockup.Data.GetSimpleOneLevelMockupDataPropertyStrings();
+
+            propertyString[2] = propertyString[2] + "XYZ";
+
+            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+
+            Assert.IsTrue(dtoList.Count() == 2);
+
+            var value = dtoList[0];
+            Assert.IsTrue(((string)value.GetType().GetProperty(propertyString[0]).GetValue(value, null)).Equals(data[0].StringValue, StringComparison.InvariantCultureIgnoreCase), "The string property was not correct");
+            Assert.IsTrue(((decimal)value.GetType().GetProperty(propertyString[1]).GetValue(value, null)) == data[0].DecimalValue, "The decimal property was not correct");
+            Assert.IsTrue(((int)value.GetType().GetProperty(propertyString[2]).GetValue(value, null)) == data[0].IntegerValue, "The int property was not correct");
+        }
+
+        [TestMethod]
         public void RunMapperComplexEntityToFlatDTOWithComplexPropertiesLevel1And2()
         {
 
@@ -131,6 +154,29 @@ namespace UnitTest
         private long GetDiffms(DateTime start, DateTime stop)
         {
             return (stop.Ticks - start.Ticks) / 10000;
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void CreateMethodPropertyInputNull()
+        {
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            factory.Create<Mockup.Data.DTOBase>(null, null);
+
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void CreateMethodPropertyInputEmptyArray()
+        {
+            var data = new object[] { };
+
+            var propertyString = new string[] { };
+
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
         }
 
     }

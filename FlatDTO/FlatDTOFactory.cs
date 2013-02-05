@@ -61,6 +61,17 @@ namespace FlatDTO
 
         public T[] Create<T>(object[] dataObject, string[] properties)
         {
+            if (dataObject == null)
+                throw new ArgumentNullException("dataObject");
+            if (properties == null)
+                throw new ArgumentNullException("properties");
+
+            if (dataObject.Count() == 0)
+                throw new System.Exception("The list of data objects to transform was empty");
+
+            if (properties.Count() == 0)
+                throw new System.Exception("The list of properties to transform was empty");
+
             var mapper = GetDTOMapper<T>(dataObject, properties);
 
             return mapper.Map<T>(dataObject);

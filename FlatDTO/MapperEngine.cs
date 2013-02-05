@@ -135,7 +135,7 @@ namespace FlatDTO
                 {
                     var propertyInfo = activeType.GetProperty(property);
                     if (propertyInfo == null)
-                        throw new Exception(string.Format("The property {0} does not exist for type {1}", property, activeType));
+                        throw new Exception.PropertyDoNotExistException(property, activeType, path);
                     
                     propertyInfoList.Add(propertyInfo);
                     activeType = propertyInfo.PropertyType;
@@ -163,7 +163,7 @@ namespace FlatDTO
             foreach (var prop in properties)
             {
                 var attributes = new List<KeyValuePair<Type, object[]>>();
-
+                attributes.Add(new KeyValuePair<Type, object[]>(typeof(System.Runtime.Serialization.DataMemberAttribute), new object[]{}));
                 //Build the property
                 buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().PropertyType, attributes);
             }
