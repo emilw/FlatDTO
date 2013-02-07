@@ -168,7 +168,7 @@ namespace UnitTest
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
-        public void CreateMethodPropertyInputEmptyArray()
+        public void CreateMethodPropertyInputEmptyPropertyArray()
         {
             var data = new object[] { };
 
@@ -177,6 +177,20 @@ namespace UnitTest
             var factory = new FlatDTO.FlatDTOFactory();
 
             factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+        }
+
+        [TestMethod]
+        public void CreateMethodPropertyInputEmptyDataArray()
+        {
+            var data = new object[] { };
+
+            var propertyString = Mockup.Data.GetSimpleOneLevelMockupDataPropertyStrings();
+
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+
+            Assert.IsTrue(dtoList.Count() == 0);
         }
 
     }

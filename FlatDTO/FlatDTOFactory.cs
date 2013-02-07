@@ -66,11 +66,11 @@ namespace FlatDTO
             if (properties == null)
                 throw new ArgumentNullException("properties");
 
-            if (dataObject.Count() == 0)
-                throw new System.Exception("The list of data objects to transform was empty");
-
             if (properties.Count() == 0)
                 throw new System.Exception("The list of properties to transform was empty");
+
+            if (dataObject.Count() == 0)
+                return new List<T>().ToArray();
 
             var mapper = GetDTOMapper<T>(dataObject, properties);
 
