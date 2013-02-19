@@ -30,7 +30,6 @@ namespace UnitTest.Mockup
             public string StringValue { get; set; }
             public decimal DecimalValue { get; set; }
             public int IntegerValue { get; set; }
-
         }
 
         public class DTOBase

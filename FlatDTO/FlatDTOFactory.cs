@@ -29,9 +29,18 @@ namespace FlatDTO
             }
         }
 
-        private BaseClass.DTOMapper GetDTOMapper<T>(object[] dataObject, string[] properties)
+        private BaseClass.DTOMapper GetDTOMapper<T>(object dataObject, string[] properties)
         {
-            var type = dataObject[0].GetType();
+
+            if (dataObject == null)
+                throw new ArgumentNullException("dataObject");
+            if (properties == null)
+                throw new ArgumentNullException("properties");
+            if (properties.Count() == 0)
+                throw new System.Exception("The list of properties to transform was empty");
+
+            var type = dataObject.GetType();
+
             string key = type.FullName;
             foreach (var property in properties)
                 key = key + property;
@@ -61,17 +70,17 @@ namespace FlatDTO
 
         public T[] Create<T>(object[] dataObject, string[] properties)
         {
-            if (dataObject == null)
-                throw new ArgumentNullException("dataObject");
-            if (properties == null)
-                throw new ArgumentNullException("properties");
-
-            if (properties.Count() == 0)
-                throw new System.Exception("The list of properties to transform was empty");
-
+            
             if (dataObject.Count() == 0)
                 return new List<T>().ToArray();
 
+            var mapper = GetDTOMapper<T>(dataObject[0], properties);
+            
+            return mapper.Map<T>(dataObject);
+        }
+
+        public T Create<T>(object dataObject, string[] properties)
+        {
             var mapper = GetDTOMapper<T>(dataObject, properties);
 
             return mapper.Map<T>(dataObject);

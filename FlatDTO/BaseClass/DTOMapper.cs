@@ -18,12 +18,17 @@ namespace FlatDTO.BaseClass
 
             foreach (var data in dataObject)
             {
-                var dto = Activator.CreateInstance(DestinationType);
-                dto = Map(data, dto);
-                result.Add((T)dto);
+                var dto = Map<T>(data);
+                result.Add(dto);
             }
 
             return result.ToArray();
+        }
+
+        public T Map<T>(object dataObject)
+        {
+            var dto = Activator.CreateInstance(DestinationType);
+            return (T)Map(dataObject, dto);
         }
 
         public abstract object Map(object sourceDataObject, object destinationObject);

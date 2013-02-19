@@ -30,6 +30,24 @@ namespace UnitTest
             Assert.IsTrue(((int)value.GetType().GetProperty(propertyString[2]).GetValue(value, null)) == data[0].IntegerValue, "The int property was not correct");
         }
 
+
+        [TestMethod]
+        public void RunSingleMapperFlatEntityToFlatDTOWithSimplePropertiesInLevel0()
+        {
+
+            var data = Mockup.Data.GetSimpleOneLevelMockupData();
+
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            var propertyString = Mockup.Data.GetSimpleOneLevelMockupDataPropertyStrings();
+
+            var dto = factory.Create<Mockup.Data.DTOBase>(data[0], propertyString);
+
+            Assert.IsTrue(((string)dto.GetType().GetProperty(propertyString[0]).GetValue(dto, null)).Equals(data[0].StringValue, StringComparison.InvariantCultureIgnoreCase), "The string property was not correct");
+            Assert.IsTrue(((decimal)dto.GetType().GetProperty(propertyString[1]).GetValue(dto, null)) == data[0].DecimalValue, "The decimal property was not correct");
+            Assert.IsTrue(((int)dto.GetType().GetProperty(propertyString[2]).GetValue(dto, null)) == data[0].IntegerValue, "The int property was not correct");
+        }
+
         [TestMethod]
         [ExpectedException(typeof(FlatDTO.Exception.PropertyDoNotExistException))]
         public void RunMapperFlatEntityToFlatDTOWithSimplePropertiesInLevel0WithNonExistingProperty()
@@ -170,7 +188,7 @@ namespace UnitTest
         [ExpectedException(typeof(Exception))]
         public void CreateMethodPropertyInputEmptyPropertyArray()
         {
-            var data = new object[] { };
+            var data = Mockup.Data.GetSimpleOneLevelMockupData();
 
             var propertyString = new string[] { };
 
