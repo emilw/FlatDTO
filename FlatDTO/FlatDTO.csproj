@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseClass\DTOMapper.cs" />
+    <Compile Include="Exception\PropertyIsNotSimpleTypeException.cs" />
     <Compile Include="Exception\PropertyDoNotExistException.cs" />
     <Compile Include="FlatDTOFactory.cs" />
     <Compile Include="MapperEngine.cs" />

@@ -133,6 +133,7 @@ namespace FlatDTO
 
                 foreach (var property in properties)
                 {
+                    //Check if the properties exists on the type
                     var propertyInfo = activeType.GetProperty(property);
                     if (propertyInfo == null)
                         throw new Exception.PropertyDoNotExistException(property, activeType, path);
@@ -141,10 +142,35 @@ namespace FlatDTO
                     activeType = propertyInfo.PropertyType;
                 }
 
+                var leafProperty = propertyInfoList.Last();
+
+                if (!IsSimpleType(leafProperty.PropertyType))
+                    throw new Exception.PropertyIsNotSimpleTypeException(leafProperty.Name, activeType, path);
+
                 result.Add(new Tuple<string, List<PropertyInfo>>(key, propertyInfoList));
             }
 
             return result;
+        }
+
+        private static bool IsSimpleType(Type type)
+        {
+            if (type == typeof(string) ||
+                type == typeof(int) ||
+                type == typeof(int?) ||
+                type == typeof(long) ||
+                type == typeof(long?) ||
+                type == typeof(DateTime) ||
+                 type == typeof(DateTime?) ||
+                type == typeof(decimal) ||
+                type == typeof(decimal?) ||
+                type == typeof(bool) ||
+                type == typeof(bool?) ||
+                type == typeof(Guid) ||
+                type == typeof(Guid?))
+                return true;
+            else
+                return false;
         }
 
 
@@ -159,13 +185,19 @@ namespace FlatDTO
             //Define the type
             var typeBuilder = moduleBuilder.DefineType(objectFullName, System.Reflection.TypeAttributes.Public, typeof(T));
 
+            var baseTypeProperties = typeof(T).GetProperties();
+
             //Go through all the parameters
             foreach (var prop in properties)
             {
-                var attributes = new List<KeyValuePair<Type, object[]>>();
-                attributes.Add(new KeyValuePair<Type, object[]>(typeof(System.Runtime.Serialization.DataMemberAttribute), new object[]{}));
-                //Build the property
-                buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().PropertyType, attributes);
+                //If the property already exists in the base type, it should not be added
+                if(!baseTypeProperties.Any(x => string.Equals(x.Name, prop.Item1, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    var attributes = new List<KeyValuePair<Type, object[]>>();
+                    attributes.Add(new KeyValuePair<Type, object[]>(typeof(System.Runtime.Serialization.DataMemberAttribute), new object[]{}));
+                    //Build the property
+                    buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().PropertyType, attributes);
+                }
             }
 
             //Create the type

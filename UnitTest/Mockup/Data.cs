@@ -35,7 +35,7 @@ namespace UnitTest.Mockup
 
         public class DTOBase
         {
-
+            public string StringValue { get; set; }
         }
 
         //Advance data
