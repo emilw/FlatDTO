@@ -18,7 +18,7 @@ namespace FlatDTO.Exception
         {
             get
             {
-                return Message;
+                return _message;
             }
         }
     }
