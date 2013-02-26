@@ -211,5 +211,46 @@ namespace UnitTest
             Assert.IsTrue(dtoList.Count() == 0);
         }
 
+
+        [TestMethod]
+        public void RunMapperComplexEntityToFlatDTOWithComplexPropertiesLevel1And2AndManualPolymorficInstruction()
+        {
+
+            var data = Mockup.Data.GetComplexTwoLevelMockupDataPolymorfic();
+
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            var propertyString = Mockup.Data.GetComplexTwoLevelMockupDataPropertyStringsPolymorfic();
+
+            var manualPolymorfic = new List<Tuple<string,Type>>();
+
+            manualPolymorfic.Add(new Tuple<string,Type>("ComplexProperty", typeof(Mockup.Data.ComplexPropertyLevel12)));
+
+            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString, manualPolymorfic);
+
+            Assert.IsTrue(dtoList.Count() == 2);
+
+            var value = dtoList[0];
+            var rootType = value.GetType();
+            Assert.IsTrue(((string)rootType.GetProperty(propertyString[0]).GetValue(value, null)).Equals(data[0].StringValue, StringComparison.InvariantCultureIgnoreCase), "The string property was not correct");
+            Assert.IsTrue(((decimal)rootType.GetProperty(propertyString[1]).GetValue(value, null)) == data[0].DecimalValue, "The decimal property was not correct");
+            Assert.IsTrue(((int)rootType.GetProperty(propertyString[2]).GetValue(value, null)) == data[0].IntegerValue, "The int property was not correct");
+
+            //Get the complex property
+            var propertyPath = propertyString[3].Replace(".", "_");
+
+            var property = rootType.GetProperty(propertyPath);
+
+            Assert.IsTrue(((string)property.GetValue(value, null)).Equals(data[0].ComplexProperty.StringValue, StringComparison.InvariantCultureIgnoreCase), "The value on Complex type on level 1 do not match");
+
+            //Check the polymorfic string
+            propertyPath = propertyString[4].Replace(".", "_");
+
+            property = rootType.GetProperty(propertyPath);
+
+            Assert.IsTrue(((string)property.GetValue(value, null)).Equals(((Mockup.Data.ComplexPropertyLevel12)data[0].ComplexProperty).PolymorficString, StringComparison.InvariantCultureIgnoreCase), "The value on the polymorfic string at Complex type on level 2 do not match");
+
+        }
+
     }
 }

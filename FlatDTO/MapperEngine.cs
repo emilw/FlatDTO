@@ -13,9 +13,9 @@ namespace FlatDTO
         private AssemblyBuilder _assemblyBuilder;
         private ModuleBuilder _moduleBuilder;
 
-        public BaseClass.DTOMapper CreateMapper<T>(Type type, string[] properties)
+        public BaseClass.DTOMapper CreateMapper<T>(Type type, string[] properties, List<Tuple<string,Type>> manualPolymorficConverter)
         {
-            var propertyInfos = GetPropertiesToUse(type, properties);
+            var propertyInfos = GetPropertiesToUse(type, properties, manualPolymorficConverter);
 
             var destinationType = CreateDTOType<T>(type, propertyInfos);
 
@@ -49,7 +49,7 @@ namespace FlatDTO
             }
         }
 
-        private BaseClass.DTOMapper CreateMapper<T>(Type sourceType, Type destinationType, List<Tuple<string, List<PropertyInfo>>> properties)
+        private BaseClass.DTOMapper CreateMapper<T>(Type sourceType, Type destinationType, List<Tuple<string, List<PropertyInfoEx>>> properties)
         {
             var objectFullName = TypeName + "MAPPER";
 
@@ -89,7 +89,9 @@ namespace FlatDTO
                 
                 foreach (var property in propertyList.Item2)
                 {
-                    il.Emit(OpCodes.Callvirt, property.GetGetMethod());
+                    il.Emit(OpCodes.Callvirt, property.SystemProperty.GetGetMethod());
+                    if(property.IsPolyMorfic)
+                        il.Emit(OpCodes.Castclass, property.Type);
                 }
 
                 il.Emit(OpCodes.Callvirt, destinationType.GetProperty(propertyList.Item1).GetSetMethod());
@@ -106,7 +108,6 @@ namespace FlatDTO
 
             var type = typeBuilder.CreateType();
 
-            //assemblyBuilder.Save(dllName);
 
             var objectToRun = (BaseClass.DTOMapper)Activator.CreateInstance(type);
 
@@ -118,36 +119,56 @@ namespace FlatDTO
 
         }
 
-        private static List<Tuple<string,List<PropertyInfo>>> GetPropertiesToUse(Type type, string[] propertyPath)
+        private static List<Tuple<string, List<PropertyInfoEx>>> GetPropertiesToUse(Type type, string[] propertyPath, List<Tuple<string, Type>> manualPolymorficConverter)
         {
 
-            var result = new List<Tuple<string, List<PropertyInfo>>>();
+            var result = new List<Tuple<string, List<PropertyInfoEx>>>();
 
             foreach(var path in propertyPath)
             {
                 var key = path.Replace('.', '_');
 
                 var properties = path.Split('.');
+                
                 var activeType = type;
-                var propertyInfoList = new List<PropertyInfo>();
+                var propertyInfoList = new List<PropertyInfoEx>();
+
+                var currentPath = "";
 
                 foreach (var property in properties)
                 {
+                    if (currentPath == "")
+                        currentPath = property;
+                    else
+                        currentPath = currentPath + "." + property;
+
+                    var polymorficType = manualPolymorficConverter.FirstOrDefault(x => string.Equals(x.Item1, currentPath, StringComparison.InvariantCultureIgnoreCase));
+
                     //Check if the properties exists on the type
                     var propertyInfo = activeType.GetProperty(property);
+
                     if (propertyInfo == null)
                         throw new Exception.PropertyDoNotExistException(property, activeType, path);
-                    
-                    propertyInfoList.Add(propertyInfo);
-                    activeType = propertyInfo.PropertyType;
+
+                    PropertyInfoEx propertyEx = null;
+
+                    if (polymorficType != null)
+                        propertyEx = new PropertyInfoEx(propertyInfo, polymorficType.Item2);
+                    else
+                        propertyEx = new PropertyInfoEx(propertyInfo);
+
+                    propertyInfoList.Add(propertyEx);
+
+                    activeType = propertyEx.Type;
+
                 }
 
                 var leafProperty = propertyInfoList.Last();
 
-                if (!IsSimpleType(leafProperty.PropertyType))
-                    throw new Exception.PropertyIsNotSimpleTypeException(leafProperty.Name, activeType, path);
+                if (!IsSimpleType(leafProperty.SystemProperty.PropertyType))
+                    throw new Exception.PropertyIsNotSimpleTypeException(leafProperty.SystemProperty.Name, activeType, path);
 
-                result.Add(new Tuple<string, List<PropertyInfo>>(key, propertyInfoList));
+                result.Add(new Tuple<string, List<PropertyInfoEx>>(key, propertyInfoList));
             }
 
             return result;
@@ -174,7 +195,7 @@ namespace FlatDTO
         }
 
 
-        private Type CreateDTOType<T>(Type type, List<Tuple<string, List<PropertyInfo>>> properties)
+        private Type CreateDTOType<T>(Type type, List<Tuple<string, List<PropertyInfoEx>>> properties)
         {
             var objectFullName = TypeName;
 
@@ -196,7 +217,7 @@ namespace FlatDTO
                     var attributes = new List<KeyValuePair<Type, object[]>>();
                     attributes.Add(new KeyValuePair<Type, object[]>(typeof(System.Runtime.Serialization.DataMemberAttribute), new object[]{}));
                     //Build the property
-                    buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().PropertyType, attributes);
+                    buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().Type, attributes);
                 }
             }
 

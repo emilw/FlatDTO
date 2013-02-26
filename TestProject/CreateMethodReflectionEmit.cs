@@ -13,7 +13,7 @@ namespace TestProject
             var typeBB = (TypeB)typeB;
 
             typeAA.StringA = typeBB.StringB;
-            typeAA.StringAA = typeBB.ComplexString.StringAA;
+            typeAA.StringAA = ((TypeAAB)typeBB.ComplexString).StringAAB;
 
             return typeAA;
         }
@@ -34,6 +34,11 @@ namespace TestProject
     public class TypeAA
     {
         public string StringAA { get; set; }
+    }
+
+    public class TypeAAB: TypeAA
+    {
+        public string StringAAB { get; set; }
     }
 
     public class TypeB

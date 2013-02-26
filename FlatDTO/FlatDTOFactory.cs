@@ -29,7 +29,7 @@ namespace FlatDTO
             }
         }
 
-        private BaseClass.DTOMapper GetDTOMapper<T>(object dataObject, string[] properties)
+        private BaseClass.DTOMapper GetDTOMapper<T>(object dataObject, string[] properties, List<Tuple<string, Type>> manualPolymorficConverter = null)
         {
 
             if (dataObject == null)
@@ -50,7 +50,9 @@ namespace FlatDTO
             if (!MapperList.ContainsKey(key))
             {
                 var mapperEngine = new MapperEngine();
-                mapper = mapperEngine.CreateMapper<T>(type, properties);
+                if (manualPolymorficConverter == null)
+                    manualPolymorficConverter = new List<Tuple<string, Type>>();
+                mapper = mapperEngine.CreateMapper<T>(type, properties, manualPolymorficConverter);
                 mapper.Key = key;
                 mapper.CreatedDateTime = DateTime.Now;
                 MapperList.Add(key, mapper);
@@ -68,13 +70,13 @@ namespace FlatDTO
             return mapper;
         }
 
-        public T[] Create<T>(object[] dataObject, string[] properties)
+        public T[] Create<T>(object[] dataObject, string[] properties, List<Tuple<string, Type>> typeConverter = null)
         {
             
             if (dataObject.Count() == 0)
                 return new List<T>().ToArray();
 
-            var mapper = GetDTOMapper<T>(dataObject[0], properties);
+            var mapper = GetDTOMapper<T>(dataObject[0], properties, typeConverter);
             
             return mapper.Map<T>(dataObject);
         }

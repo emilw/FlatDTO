@@ -53,6 +53,7 @@
     <Compile Include="FlatDTOFactory.cs" />
     <Compile Include="MapperEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PropertyInfoEx.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FlatDTOCodeSign.snk" />

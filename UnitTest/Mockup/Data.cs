@@ -60,6 +60,31 @@ namespace UnitTest.Mockup
             return new string[] { stringPropertyName, decimalPropertyName, integerPropertyName, stringProperetyNameComplex1, stringProperetyNameComplex2 };
         }
 
+
+        //Advance data
+        public static ComplexDataType[] GetComplexTwoLevelMockupDataPolymorfic()
+        {
+            var data = new List<ComplexDataType>();
+            var comp1 = new ComplexPropertyLevel2() { StringValue = "ComlpexLevel2" };
+            var comp2 = new ComplexPropertyLevel12() { ComplexProperty = comp1, StringValue = "ComplexLevel1", PolymorficString = "PolymorficString"};
+            data.Add(new ComplexDataType() { StringValue = "prop1", DecimalValue = 1, IntegerValue = 2, ComplexProperty = comp2 });
+            data.Add(new ComplexDataType() { StringValue = "prop2", DecimalValue = 100, IntegerValue = 3, ComplexProperty = comp2 });
+
+            return data.ToArray();
+        }
+
+        public static string[] GetComplexTwoLevelMockupDataPropertyStringsPolymorfic()
+        {
+            var stringPropertyName = "StringValue";
+            var decimalPropertyName = "DecimalValue";
+            var integerPropertyName = "IntegerValue";
+            var stringProperetyNameComplex1 = "ComplexProperty.StringValue";
+            var stringProperetyNameComplex12 = "ComplexProperty.PolymorficString";
+            var stringProperetyNameComplex2 = "ComplexProperty.ComplexProperty.StringValue";
+
+            return new string[] { stringPropertyName, decimalPropertyName, integerPropertyName, stringProperetyNameComplex1, stringProperetyNameComplex12, stringProperetyNameComplex2 };
+        }
+
         public class ComplexDataType : FlatDataType
         {
             public ComplexPropertyLevel1 ComplexProperty { get; set; }
@@ -69,6 +94,11 @@ namespace UnitTest.Mockup
         {
             public ComplexPropertyLevel2 ComplexProperty { get; set; }
             public string StringValue { get; set; }
+        }
+
+        public class ComplexPropertyLevel12 : ComplexPropertyLevel1
+        {
+            public string PolymorficString { get; set; }
         }
 
         public class ComplexPropertyLevel2
