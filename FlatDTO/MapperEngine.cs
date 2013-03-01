@@ -13,8 +13,10 @@ namespace FlatDTO
         private AssemblyBuilder _assemblyBuilder;
         private ModuleBuilder _moduleBuilder;
 
-        public BaseClass.DTOMapper CreateMapper<T>(Type type, string[] properties, List<Tuple<string,Type>> manualPolymorficConverter)
+        public BaseClass.DTOMapper CreateMapper<T>(Type type, string[] properties, List<PolymorficTypeConverterInstruction> manualPolymorficConverter, string key)
         {
+            _typeName = "FlatDTO" + key;
+
             var propertyInfos = GetPropertiesToUse(type, properties, manualPolymorficConverter);
 
             var destinationType = CreateDTOType<T>(type, propertyInfos);
@@ -42,9 +44,6 @@ namespace FlatDTO
         {
             get
             {
-                if (string.IsNullOrEmpty(_typeName))
-                    _typeName = "FlatDTO" + Guid.NewGuid().ToString();
-
                 return _typeName;
             }
         }
@@ -119,7 +118,7 @@ namespace FlatDTO
 
         }
 
-        private static List<Tuple<string, List<PropertyInfoEx>>> GetPropertiesToUse(Type type, string[] propertyPath, List<Tuple<string, Type>> manualPolymorficConverter)
+        private static List<Tuple<string, List<PropertyInfoEx>>> GetPropertiesToUse(Type type, string[] propertyPath, List<PolymorficTypeConverterInstruction> manualPolymorficConverter)
         {
 
             var result = new List<Tuple<string, List<PropertyInfoEx>>>();
@@ -142,7 +141,7 @@ namespace FlatDTO
                     else
                         currentPath = currentPath + "." + property;
 
-                    var polymorficType = manualPolymorficConverter.FirstOrDefault(x => string.Equals(x.Item1, currentPath, StringComparison.InvariantCultureIgnoreCase));
+                    var polymorficType = manualPolymorficConverter.FirstOrDefault(x => string.Equals(x.PropertyPath, currentPath, StringComparison.InvariantCultureIgnoreCase));
 
                     //Check if the properties exists on the type
                     var propertyInfo = activeType.GetProperty(property);
@@ -153,7 +152,7 @@ namespace FlatDTO
                     PropertyInfoEx propertyEx = null;
 
                     if (polymorficType != null)
-                        propertyEx = new PropertyInfoEx(propertyInfo, polymorficType.Item2);
+                        propertyEx = new PropertyInfoEx(propertyInfo, polymorficType.ConvertToType);
                     else
                         propertyEx = new PropertyInfoEx(propertyInfo);
 

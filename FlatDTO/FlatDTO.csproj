@@ -52,6 +52,7 @@
     <Compile Include="Exception\PropertyDoNotExistException.cs" />
     <Compile Include="FlatDTOFactory.cs" />
     <Compile Include="MapperEngine.cs" />
+    <Compile Include="PolymorficTypeConverterInstruction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyInfoEx.cs" />
   </ItemGroup>

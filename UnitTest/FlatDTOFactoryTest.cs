@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FlatDTO;
 
 namespace UnitTest
 {
@@ -128,16 +129,59 @@ namespace UnitTest
             //Run 3
             factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
 
-            Assert.IsTrue(_compileHit == 1, "The cache event was not fired");
+            Assert.IsTrue(_compileHit == 1, "The compile hit event was not 1");
             Assert.IsTrue(_cacheHit == 2, "The cache event was not fired");
 
             Assert.IsTrue(factory.CurrentListOfMappers.Count() == 1, "More then one mapper have been created, should be 1");
 
+        }
+
+        [TestMethod]
+        public void VerifyThatCacheWorksWithPolymorficInstruction()
+        {
+            var data = Mockup.Data.GetComplexTwoLevelMockupDataPolymorfic();
+            var propertyStringPoly = Mockup.Data.GetComplexTwoLevelMockupDataPropertyStringsPolymorfic();
+
+
+            var manualPolymorfic = new List<PolymorficTypeConverterInstruction>();
+
+            manualPolymorfic.Add(new PolymorficTypeConverterInstruction("ComplexProperty", typeof(Mockup.Data.ComplexPropertyLevel12)));
+
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            _cacheHit = 0;
+            _compileHit = 0;
+            factory.CacheHit += new EventHandler(factory_CacheHit);
+            factory.Compiling += new EventHandler(factory_Compiling);
+
+            //Run 1
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyStringPoly, manualPolymorfic);
+
+            //Run 2
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyStringPoly, manualPolymorfic);
+
+            var propertyString = Mockup.Data.GetComplexTwoLevelMockupDataPropertyStrings();
+
+            //Run 3
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+
+            //Run 4
+            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyStringPoly, manualPolymorfic);
+
+            Assert.IsTrue(_compileHit == 2, string.Format("The compile hit event was fired {0}, should be {1}", _compileHit, 2));
+            Assert.IsTrue(_cacheHit == 2, string.Format("The cache event was fired {0}, should be {1}", _cacheHit, 2));
+
+            Assert.IsTrue(factory.CurrentListOfMappers.Count() == 2, "The number of mappers are larger than 2");
 
         }
 
         void factory_Compiling(object sender, EventArgs e)
         {
+
+            var mapper = (FlatDTO.BaseClass.DTOMapper)sender;
+
+            Assert.IsNotNull(mapper);
+
             _compileHit = _compileHit + 1;
         }
 
@@ -222,9 +266,9 @@ namespace UnitTest
 
             var propertyString = Mockup.Data.GetComplexTwoLevelMockupDataPropertyStringsPolymorfic();
 
-            var manualPolymorfic = new List<Tuple<string,Type>>();
+            var manualPolymorfic = new List<PolymorficTypeConverterInstruction>();
 
-            manualPolymorfic.Add(new Tuple<string,Type>("ComplexProperty", typeof(Mockup.Data.ComplexPropertyLevel12)));
+            manualPolymorfic.Add(new PolymorficTypeConverterInstruction("ComplexProperty", typeof(Mockup.Data.ComplexPropertyLevel12)));
 
             var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString, manualPolymorfic);
 
