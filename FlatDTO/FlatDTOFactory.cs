@@ -3,58 +3,72 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
+using FlatDTO.BaseClass;
 
 namespace FlatDTO
 {
     public class FlatDTOFactory
     {
-        MapperEngine _mapperEngine;
         public FlatDTOFactory()
         {
-            MapperList = new Dictionary<string, BaseClass.DTOMapper>();
-            _mapperEngine = new MapperEngine();
+            MapperList = new Dictionary<string, IDTOMapperInfo>();
         }
 
-        private Dictionary<string, BaseClass.DTOMapper> MapperList { get; set; }
+        private Dictionary<string, IDTOMapperInfo> MapperList { get; set; }
 
-        public Dictionary<string, BaseClass.DTOMapper> CurrentListOfMappers
+        public IDTOMapperInfo[] RegisteredMappers
         {
             get
             {
-                return MapperList;
+                return MapperList.Values.ToArray();
             }
         }
 
-        public Type[] CurrentListOfDTOTypes
+        public DTOMapper<TDTOBase> Create<TDTOBase>(Type sourceType, string[] properties, IMapperEngine mapperEngine, List<PolymorficTypeConverterInstruction> polymorficTypeConverter = null)
         {
-            get
-            {
-                return MapperList.Values.Select(x => x.DestinationType).ToArray();
-            }
+            var mapper = GetDTOMapper<TDTOBase>(sourceType, properties, mapperEngine, polymorficTypeConverter);
+            return mapper;
         }
 
-        private BaseClass.DTOMapper GetDTOMapper<T>(object dataObject, string[] properties, List<PolymorficTypeConverterInstruction> manualPolymorficConverter = null)
+        public TDTOBase[] Map<TDTOBase>(Type sourceType, string[] properties, IMapperEngine mapperEngine, object[] data, List<PolymorficTypeConverterInstruction> polymorficTypeConverter = null)
+        {
+            return Create<TDTOBase>(sourceType, properties, mapperEngine, polymorficTypeConverter).Map(data);
+        }
+
+        public TDTOBase Map<TDTOBase>(Type sourceType, string[] properties, IMapperEngine mapperEngine, object data, List<PolymorficTypeConverterInstruction> polymorficTypeConverter = null)
+        {
+            return Create<TDTOBase>(sourceType, properties, mapperEngine, polymorficTypeConverter).Map(data);
+        }
+
+        public TOriginal[] UnMap<TDTOBase, TOriginal>(Type sourceType, string[] properties, IMapperEngine mapperEngine, object[] data, List<PolymorficTypeConverterInstruction> polymorficTypeConverter = null)
+        {
+            return Create<TDTOBase>(sourceType, properties, mapperEngine, polymorficTypeConverter).UnMap<TOriginal>(data);
+        }
+
+        public TOriginal UnMap<TDTOBase, TOriginal>(Type sourceType, string[] properties, IMapperEngine mapperEngine, object data, List<PolymorficTypeConverterInstruction> polymorficTypeConverter = null)
+        {
+            return Create<TDTOBase>(sourceType, properties, mapperEngine, polymorficTypeConverter).UnMap<TOriginal>(data);
+        }
+
+        private BaseClass.DTOMapper<TDTOBase> GetDTOMapper<TDTOBase>(Type sourceType, string[] properties, IMapperEngine mapperEngine, List<PolymorficTypeConverterInstruction> manualPolymorficConverter = null)
         {
 
-            if (dataObject == null)
-                throw new ArgumentNullException("dataObject");
+            if (sourceType == null)
+                throw new ArgumentNullException("sourceType");
             if (properties == null)
                 throw new ArgumentNullException("properties");
             if (properties.Count() == 0)
                 throw new System.Exception("The list of properties to transform was empty");
 
-            var type = dataObject.GetType();
+            var key = GetKey<TDTOBase>(sourceType, properties, mapperEngine.GetType(), manualPolymorficConverter);
 
-            var key = GetKey<T>(type, properties, manualPolymorficConverter);
-
-            BaseClass.DTOMapper mapper = null;
+            BaseClass.DTOMapper<TDTOBase> mapper = null;
 
             if (!MapperList.ContainsKey(key))
             {
-                var mapperEngine = new MapperEngine();
                 if (manualPolymorficConverter == null)
                     manualPolymorficConverter = new List<PolymorficTypeConverterInstruction>();
-                mapper = _mapperEngine.CreateMapper<T>(type, properties, manualPolymorficConverter, key);
+                mapper = mapperEngine.Create<TDTOBase>(sourceType, properties, manualPolymorficConverter, key);
                 mapper.Key = key;
                 mapper.CreatedDateTime = DateTime.Now;
                 MapperList.Add(key, mapper);
@@ -64,7 +78,7 @@ namespace FlatDTO
             }
             else
             {
-                mapper = MapperList[key];
+                mapper = (BaseClass.DTOMapper<TDTOBase>)MapperList[key];
                 if(CacheHit != null)
                     CacheHit(mapper, new EventArgs());
             }
@@ -72,30 +86,23 @@ namespace FlatDTO
             return mapper;
         }
 
-        public T[] Create<T>(object[] dataObject, string[] properties, List<PolymorficTypeConverterInstruction> polymorficTypeConverter = null)
-        {
-            
-            if (dataObject.Count() == 0)
-                return new List<T>().ToArray();
 
-            var mapper = GetDTOMapper<T>(dataObject[0], properties, polymorficTypeConverter);
-            
-            return mapper.Map<T>(dataObject);
-        }
-
-        public T Create<T>(object dataObject, string[] properties, List<PolymorficTypeConverterInstruction> polymorficTypeConverter = null)
-        {
-            var mapper = GetDTOMapper<T>(dataObject, properties, polymorficTypeConverter);
-
-            return mapper.Map<T>(dataObject);
-        }
-
-        private string GetKey<T>(Type inputType, string[] properties, List<PolymorficTypeConverterInstruction> manualPolymorficConverter = null)
+        /// <summary>
+        /// Generates a unique hash based on the input parameters.
+        /// </summary>
+        /// <typeparam name="TDTOBase"></typeparam>
+        /// <param name="inputType"></param>
+        /// <param name="properties"></param>
+        /// <param name="mapperEngineType"></param>
+        /// <param name="manualPolymorficConverter"></param>
+        /// <returns></returns>
+        protected virtual string GetKey<TDTOBase>(Type inputType, string[] properties, Type mapperEngineType, List<PolymorficTypeConverterInstruction> manualPolymorficConverter = null)
         {
             List<byte> buffer = new List<byte>();
 
             buffer.AddRange(Encoding.UTF8.GetBytes(inputType.FullName));
-            buffer.AddRange(Encoding.UTF8.GetBytes(typeof(T).FullName));
+            buffer.AddRange(Encoding.UTF8.GetBytes(typeof(TDTOBase).FullName));
+            buffer.AddRange(Encoding.UTF8.GetBytes(mapperEngineType.FullName));
 
             foreach (string property in properties)
             {

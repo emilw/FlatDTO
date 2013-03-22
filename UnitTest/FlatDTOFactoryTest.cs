@@ -11,6 +11,11 @@ namespace UnitTest
     public class FlatDTOFactoryTest
     {
 
+        private IMapperEngine GetMappingEngine()
+        {
+            return new FlatMapperEngine();
+        }
+
         [TestMethod]
         public void RunMapperFlatEntityToFlatDTOWithSimplePropertiesInLevel0()
         {
@@ -20,8 +25,10 @@ namespace UnitTest
             var factory = new FlatDTO.FlatDTOFactory();
 
             var propertyString = Mockup.Data.GetSimpleOneLevelMockupDataPropertyStrings();
-            
-            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+
+            var mapper = factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
+
+            var dtoList = mapper.Map(data.ToArray());
 
             Assert.IsTrue(dtoList.Count() == 2);
 
@@ -42,7 +49,8 @@ namespace UnitTest
 
             var propertyString = Mockup.Data.GetSimpleOneLevelMockupDataPropertyStrings();
 
-            var dto = factory.Create<Mockup.Data.DTOBase>(data[0], propertyString);
+            var mapper = factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
+            var dto = mapper.Map(data[0]);
 
             Assert.IsTrue(((string)dto.GetType().GetProperty(propertyString[0]).GetValue(dto, null)).Equals(data[0].StringValue, StringComparison.InvariantCultureIgnoreCase), "The string property was not correct");
             Assert.IsTrue(((decimal)dto.GetType().GetProperty(propertyString[1]).GetValue(dto, null)) == data[0].DecimalValue, "The decimal property was not correct");
@@ -62,7 +70,8 @@ namespace UnitTest
 
             propertyString[2] = propertyString[2] + "XYZ";
 
-            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            var mapper = factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
+            var dtoList = mapper.Map(data.ToArray());
 
             Assert.IsTrue(dtoList.Count() == 2);
 
@@ -82,7 +91,8 @@ namespace UnitTest
 
             var propertyString = Mockup.Data.GetComplexTwoLevelMockupDataPropertyStrings();
 
-            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            var mapper = factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
+            var dtoList = mapper.Map(data.ToArray());
 
             Assert.IsTrue(dtoList.Count() == 2);
 
@@ -121,18 +131,18 @@ namespace UnitTest
             factory.Compiling += new EventHandler(factory_Compiling);
 
             //Run 1
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
 
             //Run 2
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
 
             //Run 3
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
 
             Assert.IsTrue(_compileHit == 1, "The compile hit event was not 1");
             Assert.IsTrue(_cacheHit == 2, "The cache event was not fired");
 
-            Assert.IsTrue(factory.CurrentListOfMappers.Count() == 1, "More then one mapper have been created, should be 1");
+            Assert.IsTrue(factory.RegisteredMappers.Count() == 1, "More then one mapper have been created, should be 1");
 
         }
 
@@ -155,30 +165,30 @@ namespace UnitTest
             factory.Compiling += new EventHandler(factory_Compiling);
 
             //Run 1
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyStringPoly, manualPolymorfic);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyStringPoly, GetMappingEngine(), manualPolymorfic);
 
             //Run 2
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyStringPoly, manualPolymorfic);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyStringPoly, GetMappingEngine(), manualPolymorfic);
 
             var propertyString = Mockup.Data.GetComplexTwoLevelMockupDataPropertyStrings();
 
             //Run 3
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
 
             //Run 4
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyStringPoly, manualPolymorfic);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyStringPoly, GetMappingEngine(), manualPolymorfic);
 
             Assert.IsTrue(_compileHit == 2, string.Format("The compile hit event was fired {0}, should be {1}", _compileHit, 2));
             Assert.IsTrue(_cacheHit == 2, string.Format("The cache event was fired {0}, should be {1}", _cacheHit, 2));
 
-            Assert.IsTrue(factory.CurrentListOfMappers.Count() == 2, "The number of mappers are larger than 2");
+            Assert.IsTrue(factory.RegisteredMappers.Count() == 2, "The number of mappers are larger than 2");
 
         }
 
         void factory_Compiling(object sender, EventArgs e)
         {
 
-            var mapper = (FlatDTO.BaseClass.DTOMapper)sender;
+            var mapper = (FlatDTO.BaseClass.DTOMapper<Mockup.Data.DTOBase>)sender;
 
             Assert.IsNotNull(mapper);
 
@@ -203,11 +213,11 @@ namespace UnitTest
             var factory = new FlatDTO.FlatDTOFactory();
 
             var start = DateTime.Now;
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
             var resultBase = GetDiffms(start, DateTime.Now);
             
             start = DateTime.Now;
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
             var result = GetDiffms(start, DateTime.Now);
 
             Assert.IsTrue(result < resultBase, "The timing cache result is {0}, the compile result is {1}", result, resultBase);
@@ -224,7 +234,7 @@ namespace UnitTest
         {
             var factory = new FlatDTO.FlatDTOFactory();
 
-            factory.Create<Mockup.Data.DTOBase>(null, null);
+            factory.Create<Mockup.Data.DTOBase>(null, null, GetMappingEngine());
 
         }
 
@@ -238,7 +248,7 @@ namespace UnitTest
 
             var factory = new FlatDTO.FlatDTOFactory();
 
-            factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
         }
 
         [TestMethod]
@@ -250,7 +260,25 @@ namespace UnitTest
 
             var factory = new FlatDTO.FlatDTOFactory();
 
-            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString);
+            var mapper = factory.Create<Mockup.Data.DTOBase>(typeof(Mockup.Data.FlatDataType), propertyString, GetMappingEngine());
+            var dtoList = mapper.Map((object[])data.ToArray());
+
+            Assert.IsTrue(dtoList.Count() == 0);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FlatDTO.Exception.MapperException<Mockup.Data.DTOBase>))]
+        public void FlatDTOMappingEngineUnMapNotImplemented()
+        {
+            var data = Mockup.Data.GetSimpleOneLevelMockupData();
+
+            var propertyString = Mockup.Data.GetSimpleOneLevelMockupDataPropertyStrings();
+
+            var factory = new FlatDTO.FlatDTOFactory();
+
+            var mapper = factory.Create<Mockup.Data.DTOBase>(typeof(Mockup.Data.FlatDataType), propertyString, GetMappingEngine());
+            var dtoList = mapper.Map(data.ToArray());
+            mapper.UnMap<Mockup.Data.FlatDataType>(dtoList);
 
             Assert.IsTrue(dtoList.Count() == 0);
         }
@@ -270,7 +298,8 @@ namespace UnitTest
 
             manualPolymorfic.Add(new PolymorficTypeConverterInstruction("ComplexProperty", typeof(Mockup.Data.ComplexPropertyLevel12)));
 
-            var dtoList = factory.Create<Mockup.Data.DTOBase>(data.ToArray(), propertyString, manualPolymorfic);
+            var mapper = factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine(), manualPolymorfic);
+            var dtoList = mapper.Map((object[])data.ToArray());
 
             Assert.IsTrue(dtoList.Count() == 2);
 

@@ -17,16 +17,18 @@ namespace TestProject
 
             var factory = new FlatDTO.FlatDTOFactory();
 
+            var mapperEngine = new FlatDTO.FlatMapperEngine();
+
             var start = DateTime.Now;
-            factory.Create<MyBaseDTO>(data.ToArray(), new string[] { "Property", "Thingy", "Prio" });
+            factory.Create<MyBaseDTO>(data[0].GetType(), new string[] { "Property", "Thingy", "Prio" }, mapperEngine);
             var stop = DateTime.Now;
             Console.WriteLine((stop.Ticks - start.Ticks)/10000);
             start = DateTime.Now;
-            factory.Create<MyBaseDTO>(data.ToArray(), new string[] { "Property", "Thingy", "Prio" });
+            factory.Create<MyBaseDTO>(data[0].GetType(), new string[] { "Property", "Thingy", "Prio" }, mapperEngine);
             stop = DateTime.Now;
             Console.WriteLine((stop.Ticks - start.Ticks) / 10000);
             start = DateTime.Now;
-            factory.Create<MyBaseDTO>(data.ToArray(), new string[] { "Property", "Thingy"});
+            factory.Create<MyBaseDTO>(data[0].GetType(), new string[] { "Property", "Thingy" }, mapperEngine);
             stop = DateTime.Now;
             Console.WriteLine((stop.Ticks - start.Ticks) / 10000);
 

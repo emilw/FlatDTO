@@ -45,7 +45,9 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExtensionTest.cs" />
     <Compile Include="Mockup\Data.cs" />
+    <Compile Include="Mockup\DummyMapperEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FlatDTOFactoryTest.cs" />
   </ItemGroup>
