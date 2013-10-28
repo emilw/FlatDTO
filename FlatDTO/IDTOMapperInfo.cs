@@ -12,6 +12,7 @@ namespace FlatDTO
 
         string Key { get; set; }
         DateTime CreatedDateTime { get; set; }
+        IMapperEngine MapperEngine { get; set; }
         
     }
 }

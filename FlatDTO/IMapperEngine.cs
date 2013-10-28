@@ -19,5 +19,11 @@ namespace FlatDTO
         /// <param name="key"></param>
         /// <returns></returns>
         BaseClass.DTOMapper<T> Create<T>(Type type, string[] properties, List<PolymorficTypeConverterInstruction> manualPolymorficConverter, string key);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="folderPath"></param>
+        void SaveAssembly(string folderPath);
     }
 }

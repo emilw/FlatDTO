@@ -21,6 +21,8 @@ namespace FlatDTO
 
             var mapper = CreateMapper<T>(type, destinationType, propertyInfos);
 
+            mapper.MapperEngine = this;
+
             return mapper;
         }
 
@@ -66,13 +68,23 @@ namespace FlatDTO
                     //Check if the properties exists on the type
                     var propertyInfo = activeType.GetProperty(property);
 
+                    Type listType = null;
+
+                    if (propertyInfo != null && IsCollectionType(propertyInfo.PropertyType))
+                    {
+                        listType = propertyInfo.PropertyType.GetProperty("Item").PropertyType;
+                        //throw new System.Exception("Collection type found at: " + propertyInfo.Name + " " + listType.Name);
+                    }
+
                     if (propertyInfo == null)
                         throw new Exception.PropertyDoNotExistException(property, activeType, path);
 
                     PropertyInfoEx propertyEx = null;
 
                     if (polymorficType != null)
-                        propertyEx = new PropertyInfoEx(propertyInfo, polymorficType.ConvertToType);
+                        propertyEx = PropertyInfoEx.CreatePolymorficProperty(propertyInfo, polymorficType.ConvertToType);
+                    else if (listType != null)
+                        propertyEx = PropertyInfoEx.CreateCollectionProperty(propertyInfo, listType);
                     else
                         propertyEx = new PropertyInfoEx(propertyInfo);
 
@@ -91,6 +103,18 @@ namespace FlatDTO
             }
 
             return result;
+        }
+
+        protected static bool IsCollectionType(Type type)
+        {
+            Type collectionType = typeof(ICollection<>);
+
+            if (type.IsGenericType && collectionType.IsAssignableFrom(type.GetGenericTypeDefinition()) ||
+                type.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == collectionType))
+            {
+                return true;
+            }
+            return false;
         }
 
         protected static bool IsSimpleType(Type type)
@@ -115,6 +139,11 @@ namespace FlatDTO
 
 
         protected virtual Type CreateDTOType<T>(Type type, List<Tuple<string, List<PropertyInfoEx>>> properties)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void SaveAssembly(string folderPath)
         {
             throw new NotImplementedException();
         }

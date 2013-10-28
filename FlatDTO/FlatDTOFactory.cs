@@ -14,6 +14,16 @@ namespace FlatDTO
             MapperList = new Dictionary<string, IDTOMapperInfo>();
         }
 
+        private string _folderPath = null;
+
+        public void SaveMappersToDisk(string folderPath = null)
+        {
+            foreach (var key in MapperList.Keys)
+            {
+                MapperList[key].MapperEngine.SaveAssembly(folderPath);
+            }
+        }
+
         private Dictionary<string, IDTOMapperInfo> MapperList { get; set; }
 
         public IDTOMapperInfo[] RegisteredMappers

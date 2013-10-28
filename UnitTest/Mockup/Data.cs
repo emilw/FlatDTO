@@ -43,8 +43,11 @@ namespace UnitTest.Mockup
             var data = new List<ComplexDataType>();
             var comp1 = new ComplexPropertyLevel2() { StringValue = "ComlpexLevel2" };
             var comp2 = new ComplexPropertyLevel1() { ComplexProperty = comp1, StringValue = "ComplexLevel1" };
-            data.Add(new ComplexDataType() { StringValue = "prop1", DecimalValue = 1, IntegerValue = 2, ComplexProperty = comp2});
-            data.Add(new ComplexDataType() { StringValue = "prop2", DecimalValue = 100, IntegerValue = 3, ComplexProperty = comp2 });
+            var comp1List = new List<ComplexPropertyLevel1>();
+            comp1List.Add(new ComplexPropertyLevel1() { StringValue = "Line1" });
+            comp1List.Add(new ComplexPropertyLevel1() { StringValue = "Line2" });
+            data.Add(new ComplexDataType() { StringValue = "prop1", DecimalValue = 1, IntegerValue = 2, ComplexProperty = comp2, ComplexPropertyList = comp1List});
+            data.Add(new ComplexDataType() { StringValue = "prop2", DecimalValue = 100, IntegerValue = 3, ComplexProperty = comp2, ComplexPropertyList = comp1List });
 
             return data.ToArray();
         }
@@ -58,6 +61,13 @@ namespace UnitTest.Mockup
             var stringProperetyNameComplex2 = "ComplexProperty.ComplexProperty.StringValue";
 
             return new string[] { stringPropertyName, decimalPropertyName, integerPropertyName, stringProperetyNameComplex1, stringProperetyNameComplex2 };
+        }
+
+        public static string[] GetComplexTwoLevelListMockupDataPropertyStrings()
+        {
+            var result = GetComplexTwoLevelMockupDataPropertyStrings().ToList();
+            result.Add("ComplexPropertyList.StringValue");
+            return result.ToArray();
         }
 
 
@@ -88,6 +98,7 @@ namespace UnitTest.Mockup
         public class ComplexDataType : FlatDataType
         {
             public ComplexPropertyLevel1 ComplexProperty { get; set; }
+            public List<ComplexPropertyLevel1> ComplexPropertyList { get; set; }
         }
 
         public class ComplexPropertyLevel1

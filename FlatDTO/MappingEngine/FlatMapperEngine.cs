@@ -82,7 +82,7 @@ namespace FlatDTO
         private void GeneratePropertyMaps(ILGenerator il, Type destinationType, Type sourceType, List<Tuple<string, List<PropertyInfoEx>>> properties)
         {
             //Get the properties to use
-            foreach (var propertyList in properties)
+            foreach (var propertyList in properties.Where(x => x.Item2.Exists(y => !y.IsCollection)))
             {
                 //Load the source type
                 il.Emit(OpCodes.Ldloc_1);
@@ -230,6 +230,14 @@ namespace FlatDTO
                 //propBuilder.SetCustomAttribute()
             }
 
+        }
+
+        public override void SaveAssembly(string folderPath)
+        {
+            if (folderPath != null)
+                throw new NotSupportedException("folderPath is not supported when saving assembly");
+
+            _assemblyBuilder.Save("FlatDTOOutputFile.dll");
         }
     }
 }

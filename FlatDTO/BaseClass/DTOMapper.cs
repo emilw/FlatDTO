@@ -77,5 +77,8 @@ namespace FlatDTO.BaseClass
         {
             throw new NotImplementedException("To be able to use the Map method, implement it in the mapper engine");
         }
+
+
+        public IMapperEngine MapperEngine { get; set; }
     }
 }
