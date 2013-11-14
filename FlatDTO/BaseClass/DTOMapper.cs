@@ -18,8 +18,15 @@ namespace FlatDTO.BaseClass
 
             foreach (var data in dataObject)
             {
-                var dto = Map(data);
-                result.Add(dto);
+                var dto = ObjectMap(data);
+                if (FlatDTO.MapperEngine.IsCollectionType(dto.GetType()))
+                {
+                    result.AddRange((List<TDTOBase>)dto);
+                }
+                else
+                {
+                    result.Add((TDTOBase)dto);
+                }
             }
 
             return result.ToArray();
@@ -27,10 +34,19 @@ namespace FlatDTO.BaseClass
 
         public TDTOBase Map(object dataObject)
         {
+            //return (TDTOBase)ObjectMap(dataObject);
+
+            var objects = new object[]{dataObject};
+
+            return Map(objects).FirstOrDefault();
+        }
+
+        private object ObjectMap(object dataObject)
+        {
             try
             {
                 var dto = Activator.CreateInstance(DestinationType);
-                return (TDTOBase)Map(dataObject, dto);
+                return Map(dataObject, dto);
             }
             catch (System.Exception ex)
             {
@@ -38,8 +54,11 @@ namespace FlatDTO.BaseClass
             }
 
             return default(TDTOBase);
-
         }
+
+
+
+        
 
         public TOriginal[] UnMap<TOriginal>(object[] dataObject)
         {
@@ -75,8 +94,10 @@ namespace FlatDTO.BaseClass
         }
         public virtual object UnMap(object sourceDataObject, object destinationObject)
         {
-            throw new NotImplementedException("To be able to use the Map method, implement it in the mapper engine");
+            throw new NotImplementedException("To be able to use the UnMap method, implement it in the mapper engine");
         }
+
+        public bool Repeat { get; set; }
 
 
         public IMapperEngine MapperEngine { get; set; }

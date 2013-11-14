@@ -14,6 +14,7 @@ namespace UnitTest.Mockup
                 return base.TypeName + "mjau";
             }
         }
+
     }
 
 
@@ -25,13 +26,19 @@ namespace UnitTest.Mockup
         //My custom DTO type specified here
         protected override Type CreateDTOType<T>(Type type, List<Tuple<string, List<FlatDTO.PropertyInfoEx>>> properties)
         {
-            return base.CreateDTOType<T>(type, properties);
+            return typeof(UnitTest.Mockup.Data.FlatDataType);
         }
         
         //My custom mapper
         protected override FlatDTO.BaseClass.DTOMapper<T> CreateMapper<T>(Type sourceType, Type destinationType, List<Tuple<string, List<FlatDTO.PropertyInfoEx>>> properties)
         {
-            return base.CreateMapper<T>(sourceType, destinationType, properties);
+            var result = new ObjectListMapper<T>();//base.CreateMapper<T>(sourceType, destinationType, properties);
+
+            result.SourceType = sourceType;
+            result.DestinationType = destinationType;
+
+            return result;
+        
         }
     }
 }

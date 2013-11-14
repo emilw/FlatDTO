@@ -105,7 +105,7 @@ namespace FlatDTO
             return result;
         }
 
-        protected static bool IsCollectionType(Type type)
+        public static bool IsCollectionType(Type type)
         {
             Type collectionType = typeof(ICollection<>);
 

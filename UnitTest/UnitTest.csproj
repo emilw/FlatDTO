@@ -48,8 +48,10 @@
     <Compile Include="ExtensionTest.cs" />
     <Compile Include="Mockup\Data.cs" />
     <Compile Include="Mockup\DummyMapperEngine.cs" />
+    <Compile Include="Mockup\ObjectListMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FlatDTOFactoryTest.cs" />
+    <Compile Include="TestFolder\TestClass.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FlatDTO\FlatDTO.csproj">

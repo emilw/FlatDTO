@@ -57,6 +57,7 @@
     <Compile Include="IMapperEngine.cs" />
     <Compile Include="MapperEngine.cs" />
     <Compile Include="MappingEngine\FlatMapperEngine.cs" />
+    <Compile Include="MappingEngine\FlatMapperEngineWithRepeater.cs" />
     <Compile Include="PolymorficTypeConverterInstruction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyInfoEx.cs" />
