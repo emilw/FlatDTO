@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FlatDTO;
 using System.Linq.Expressions;
+using FlatDTO.Exception;
 
 namespace UnitTest
 {
@@ -103,6 +104,45 @@ namespace UnitTest
             var outValue = action(source);
 
             Assert.IsTrue(outValue == 4);
+        }
+
+        [TestMethod]
+        public void FlatMapperEngineWithRepeaterTestRegularRepeater()
+        {
+            var factory = new FlatDTO.FlatDTOFactory();
+            var properties = Mockup.Data.GetComplexTwoLevelListMockupDataPropertyStrings();
+            var data = Mockup.Data.GetComplexTwoLevelMockupData();
+            var mapper = factory.Create<Mockup.Data.FlatDataType>(data[0].GetType(), properties,
+                                                                    new FlatDTO.MappingEngine.FlatMapperEngineWithRepeater());
+
+            //Data records sent in is 2
+            var result = mapper.Map(data);
+            //Result is 22, the DummyMapperEngine uses another mapper that returns static 10 items per item sent in
+            Assert.IsTrue(result.Count() == 4);
+
+            var property = result[0].GetType().GetProperty("ComplexPropertyList_ComplexProperty_StringValue");
+            var value = ((string)property.GetValue(result[0], null));
+
+            Assert.IsTrue(String.Equals(value, "LineComplexValue1"));
+
+            property = result[0].GetType().GetProperty("ComplexPropertyList_StringValue");
+            value = ((string)property.GetValue(result[0], null));
+
+            Assert.IsTrue(String.Equals(value, "Line1"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(MultipleListItemInstructionsException))]
+        public void FlatMapperEngineWithRepeaterTestWithMultipleLineInstructions()
+        {
+            var factory = new FlatDTO.FlatDTOFactory();
+            var properties = Mockup.Data.GetComplexTwoLevelListMockupDataPropertyStrings().ToList();
+
+            properties.Add("ComplexPropertyList2.ComplexProperty.StringValue");
+            var data = Mockup.Data.GetComplexTwoLevelMockupData();
+            var mapper = factory.Create<Mockup.Data.FlatDataType>(data[0].GetType(), properties.ToArray(),
+                                                                    new FlatDTO.MappingEngine.FlatMapperEngineWithRepeater());
+            var result = mapper.Map(data);
         }
     }
 }

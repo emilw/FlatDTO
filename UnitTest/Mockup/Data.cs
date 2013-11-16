@@ -43,11 +43,17 @@ namespace UnitTest.Mockup
             var data = new List<ComplexDataType>();
             var comp1 = new ComplexPropertyLevel2() { StringValue = "ComlpexLevel2" };
             var comp2 = new ComplexPropertyLevel1() { ComplexProperty = comp1, StringValue = "ComplexLevel1" };
+
+            //Line items
+            var complexLineItem1 = new ComplexPropertyLevel2() { StringValue = "LineComplexValue1" };
+            var complexLineItem2 = new ComplexPropertyLevel2() { StringValue = "LineComplexValue2" };
             var comp1List = new List<ComplexPropertyLevel1>();
-            comp1List.Add(new ComplexPropertyLevel1() { StringValue = "Line1" });
-            comp1List.Add(new ComplexPropertyLevel1() { StringValue = "Line2" });
-            data.Add(new ComplexDataType() { StringValue = "prop1", DecimalValue = 1, IntegerValue = 2, ComplexProperty = comp2, ComplexPropertyList = comp1List});
-            data.Add(new ComplexDataType() { StringValue = "prop2", DecimalValue = 100, IntegerValue = 3, ComplexProperty = comp2, ComplexPropertyList = comp1List });
+            comp1List.Add(new ComplexPropertyLevel1() { StringValue = "Line1", ComplexProperty = complexLineItem1 });
+            comp1List.Add(new ComplexPropertyLevel1() { StringValue = "Line2", ComplexProperty = complexLineItem2 });
+
+            //Result
+            data.Add(new ComplexDataType() { StringValue = "prop1", DecimalValue = 1, IntegerValue = 2, ComplexProperty = comp2, ComplexPropertyList = comp1List, ComplexPropertyList2 = comp1List});
+            data.Add(new ComplexDataType() { StringValue = "prop2", DecimalValue = 100, IntegerValue = 3, ComplexProperty = comp2, ComplexPropertyList = comp1List, ComplexPropertyList2 = comp1List });
 
             return data.ToArray();
         }
@@ -67,6 +73,7 @@ namespace UnitTest.Mockup
         {
             var result = GetComplexTwoLevelMockupDataPropertyStrings().ToList();
             result.Add("ComplexPropertyList.StringValue");
+            result.Add("ComplexPropertyList.ComplexProperty.StringValue");
             return result.ToArray();
         }
 
@@ -99,6 +106,7 @@ namespace UnitTest.Mockup
         {
             public ComplexPropertyLevel1 ComplexProperty { get; set; }
             public List<ComplexPropertyLevel1> ComplexPropertyList { get; set; }
+            public List<ComplexPropertyLevel1> ComplexPropertyList2 { get; set; }
         }
 
         public class ComplexPropertyLevel1

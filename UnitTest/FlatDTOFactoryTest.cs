@@ -11,7 +11,7 @@ namespace UnitTest
     public class FlatDTOFactoryTest
     {
 
-        private IMapperEngine GetMappingEngine()
+        protected virtual IMapperEngine GetMappingEngine()
         {
             return new FlatMapperEngine();
         }
@@ -130,7 +130,8 @@ namespace UnitTest
             var mapper = factory.Create<Mockup.Data.DTOBase>(data[0].GetType(), propertyString, GetMappingEngine());
             var dtoList = mapper.Map(data.ToArray());
 
-            Assert.IsTrue(dtoList.Count() == 2);
+            if(!(mapper.MapperEngine is FlatDTO.MappingEngine.FlatMapperEngineWithRepeater))
+                Assert.IsTrue(dtoList.Count() == 2);
 
             var value = dtoList[0];
             var rootType = value.GetType();
