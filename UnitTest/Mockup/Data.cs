@@ -37,6 +37,10 @@ namespace UnitTest.Mockup
             public string StringValue { get; set; }
         }
 
+        public class DTOBaseEmpty
+        {
+        }
+
         //Advance data
         public static ComplexDataType[] GetComplexTwoLevelMockupData()
         {
@@ -105,8 +109,8 @@ namespace UnitTest.Mockup
         public class ComplexDataType : FlatDataType
         {
             public ComplexPropertyLevel1 ComplexProperty { get; set; }
-            public List<ComplexPropertyLevel1> ComplexPropertyList { get; set; }
-            public List<ComplexPropertyLevel1> ComplexPropertyList2 { get; set; }
+            public IList<ComplexPropertyLevel1> ComplexPropertyList { get; set; }
+            public IList<ComplexPropertyLevel1> ComplexPropertyList2 { get; set; }
         }
 
         public class ComplexPropertyLevel1

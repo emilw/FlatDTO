@@ -50,7 +50,7 @@ namespace FlatDTO.BaseClass
             }
             catch (System.Exception ex)
             {
-                throw new Exception.MapperException<TDTOBase>(this, ex, false);
+                throw new Exception.MapperException<TDTOBase>(this, ex, true);
             }
 
             return default(TDTOBase);

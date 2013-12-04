@@ -25,6 +25,7 @@ namespace FlatDTO.MappingEngine
         //private Func<object, int> ItemCount = null;
         private IEnumerable<object> ItemsToMap = null;
         private Func<object, object,object> ListMap = null;
+        private Func<object, IEnumerable<object>> ItemsToMapFunc = null;
 
         public FlatMapper(Type sourceType, Type destinationType, List<Tuple<string, List<PropertyInfoEx>>> properties, IDTOMapper<T> itemMapper)
         {
@@ -80,39 +81,64 @@ namespace FlatDTO.MappingEngine
             }
             else
             {
-                List<T> list = new List<T>();
-
-                var prop = CollectionProperties.FirstOrDefault();
-
-                var itemsToMap = GetItemsToMap(sourceDataObject, prop);
-
-                foreach (var item in itemsToMap)
+                try
                 {
-                    destinationObject = Activator.CreateInstance(destinationObject.GetType());
-                    destinationObject = ItemMapper.Map(sourceDataObject, destinationObject);
+                    List<T> list = new List<T>();
 
-                    var listMap = GetListMap(item, destinationObject);
+                    var prop = CollectionProperties.FirstOrDefault();
 
-                    listMap(item, destinationObject);
+                    var itemsToMap = GetItemsToMap(sourceDataObject, prop);
 
-                    list.Add((T)destinationObject);
+                    foreach (var item in itemsToMap)
+                    {
+                        destinationObject = Activator.CreateInstance(destinationObject.GetType());
+                        destinationObject = ItemMapper.Map(sourceDataObject, destinationObject);
+                        try
+                        {
+                            var listMap = GetListMap(item, destinationObject);
+
+                            listMap(item, destinationObject);
+
+                            list.Add((T)destinationObject);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            string Message = string.Format("Problem with list mapper, more: {0}", ex.Message);
+                            throw new System.Exception(Message, ex);
+                        }
+                    }
+
+                    return list;
                 }
-
-                return list;
+                catch (System.Exception ex)
+                {
+                    string Message = string.Format("Problem with mapper, more: {0}", ex.Message);
+                    throw new System.Exception(Message, ex);
+                }
             }
         }
 
 
         private IEnumerable<object> GetItemsToMap(object sourceDataObject, Tuple<string, List<PropertyInfoEx>> propertyPath)
         {
-            if (ItemsToMap == null)
+            //if (ItemsToMap == null)
+            if (ItemsToMapFunc == null)
             {
-                var inputParameter = Expression.Parameter(typeof(object), "inputParameter");
-                var parameter = Expression.Convert(inputParameter, sourceDataObject.GetType());
-                var property = Expression.Property(parameter, propertyPath.Item2[0].SystemProperty.Name);
-                var items = Expression.Lambda<Func<object, IEnumerable<object>>>(property, inputParameter).Compile();
-                ItemsToMap = items(sourceDataObject);
+                try
+                {
+                    var inputParameter = Expression.Parameter(typeof(object), "inputParameter");
+                    var parameter = Expression.Convert(inputParameter, sourceDataObject.GetType());
+                    var property = Expression.Property(parameter, propertyPath.Item2[0].SystemProperty.Name);
+                    ItemsToMapFunc = Expression.Lambda<Func<object, IEnumerable<object>>>(property, inputParameter).Compile();
+                }
+                catch (System.Exception ex)
+                {
+                    string Message = string.Format("Problem with get item to map, more: {0}", ex.Message);
+                    throw new System.Exception(Message, ex);
+                }
             }
+
+            ItemsToMap = ItemsToMapFunc(sourceDataObject);
 
             return ItemsToMap;
         }

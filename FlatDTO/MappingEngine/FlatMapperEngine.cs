@@ -82,7 +82,7 @@ namespace FlatDTO
         private void GeneratePropertyMaps(ILGenerator il, Type destinationType, Type sourceType, List<Tuple<string, List<PropertyInfoEx>>> properties)
         {
             //Get the properties to use
-            foreach (var propertyList in properties.Where(x => x.Item2.Exists(y => !y.IsCollection)))
+            foreach (var propertyList in properties.Where(x => !x.Item2.Exists(y => y.IsCollection)))
             {
                 //Load the source type
                 il.Emit(OpCodes.Ldloc_1);
