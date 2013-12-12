@@ -47,6 +47,12 @@
   <ItemGroup>
     <Compile Include="FlatMapperEngineWithRepeaterTests.cs" />
     <Compile Include="ExtensionTest.cs" />
+    <Compile Include="MapperEngineWithRepeater\BasicCollectionMappingTests.cs" />
+    <Compile Include="MapperEngineWithRepeater\BasicCollectionGenericPathMappingTests.cs" />
+    <Compile Include="MapperEngineWithRepeater\BasicCollectionGenericMappingTests.cs" />
+    <Compile Include="MapperEngineWithRepeater\BasicCollectionPathMappingTests.cs" />
+    <Compile Include="MapperEngineWithRepeater\BasicMappingTests.cs" />
+    <Compile Include="MapperEngineWithRepeater\BasicTestsBase.cs" />
     <Compile Include="Mockup\Data.cs" />
     <Compile Include="Mockup\DummyMapperEngine.cs" />
     <Compile Include="Mockup\ObjectListMapper.cs" />
