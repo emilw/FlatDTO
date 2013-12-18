@@ -102,7 +102,7 @@ namespace FlatDTO
                     else if (listType != null)
                         propertyEx = PropertyInfoEx.CreateCollectionProperty(propertyInfo, listType);
                     else if (HasComplexObjectDescriptor(propertyInfo.PropertyType))
-                        propertyEx = PropertyInfoEx.CreateComplexObjectDescriptorProperty(propertyInfo, _descriptors.Where(x => x.RealTypeOfObject == propertyInfo.PropertyType).FirstOrDefault());
+                        propertyEx = PropertyInfoEx.CreateComplexObjectDescriptorProperty(propertyInfo, _descriptors.Where(x => x.HandlesType(propertyInfo.PropertyType)).FirstOrDefault());
                     else
                         propertyEx = new PropertyInfoEx(propertyInfo);
 
@@ -138,7 +138,7 @@ namespace FlatDTO
             if (_descriptors == null)
                 return false;
             else
-                return _descriptors.Exists(x => x.RealTypeOfObject == type);
+                return _descriptors.Exists(x => x.HandlesType(type));
         }
 
         protected static bool IsSimpleType(Type type)

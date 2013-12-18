@@ -139,9 +139,9 @@ namespace UnitTest.Mockup
                 _realType = connectToType;
             }
 
-            public Type RealTypeOfObject
+            public bool HandlesType(Type type)
             {
-                get { return _realType; }
+                return _realType == type;
             }
 
             public virtual string Describe(object @object)

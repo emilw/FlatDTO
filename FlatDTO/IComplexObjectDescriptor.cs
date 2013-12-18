@@ -7,7 +7,7 @@ namespace FlatDTO
 {
     public interface IComplexObjectDescriptor
     {
-        Type RealTypeOfObject { get; }
+        bool HandlesType(Type type);
         string Describe(object @object);
     }
 }

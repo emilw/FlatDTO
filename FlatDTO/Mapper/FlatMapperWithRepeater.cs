@@ -6,7 +6,7 @@ using System.Text;
 
 namespace FlatDTO.Mapper
 {
-    public class FlatMapperWithRepeater<T> : BaseClass.DTOMapper<T>
+    public class FlatMapperWithRepeater<T> : Mapper.FlatMapper<T>
     {
         private List<Tuple<string, List<PropertyInfoEx>>> CollectionProperties;
         private IDTOMapper<T> ItemMapper = null;
@@ -38,7 +38,7 @@ namespace FlatDTO.Mapper
                 throw new Exception.MultipleListItemInstructionsException(collectionPropertyInfo.Select(x => x.SystemProperty.Name).Distinct().ToArray());
         }
 
-        private Expression getPropertyMapExpression(object item, object destinationObject, Tuple<string, List<PropertyInfoEx>> propertyPath,
+        /*private Expression getPropertyMapExpression(object item, object destinationObject, Tuple<string, List<PropertyInfoEx>> propertyPath,
                                                     ParameterExpression input, ParameterExpression output)
         {
             var valueLine = Expression.Convert(input, item.GetType());
@@ -63,10 +63,6 @@ namespace FlatDTO.Mapper
             if (descriptor != null)
             {
 
-                //var complexDescriptorExpression = Expression.Variable(typeof(IComplexObjectDescriptor));
-                //var descriptorExpression = Expression.Assign(complexDescriptorExpression, Expression.Constant(descriptor));
-                //var describeString = Expression.Call(descriptorExpression, "Describe", new Expression[] {valueProperty});
-                //var describeString = Expression.Call(descriptorExpression,typeof(IComplexObjectDescriptor).GetMethod("Describe"), new Expression[] { valueProperty });
                 var describeString = Expression.Call(Expression.Constant(descriptor), typeof(IComplexObjectDescriptor).GetMethod("Describe"), new Expression[] { valueProperty });
 
                 //Get the real type object to map against
@@ -92,7 +88,7 @@ namespace FlatDTO.Mapper
 
                 return assignExpression;
             }
-        }
+        }*/
 
         public override object Map(object sourceDataObject, object destinationObject)
         {

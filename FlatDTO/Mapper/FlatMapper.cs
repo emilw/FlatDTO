@@ -72,6 +72,60 @@ namespace FlatDTO.Mapper
             return destinationObject;
         }
 
+
+        protected Expression getPropertyMapExpression(object item, object destinationObject, Tuple<string, List<PropertyInfoEx>> propertyPath,
+                                                    ParameterExpression input, ParameterExpression output)
+        {
+            var valueLine = Expression.Convert(input, item.GetType());
+
+            Expression valueProperty = valueLine;
+            IComplexObjectDescriptor descriptor = null;
+
+            //Get the property from the source, iterate to the end of the list, it's ordered
+            foreach (var property in propertyPath.Item2)
+            {
+                if (!property.IsCollection)
+                {
+                    valueProperty = Expression.PropertyOrField(valueProperty, property.SystemProperty.Name);
+                }
+            }
+
+            if (propertyPath.Item2.Last().HasComplexObjectDescriptor)
+            {
+                descriptor = propertyPath.Item2.Last().ComplexObjectDescriptor;
+            }
+
+            if (descriptor != null)
+            {
+
+                var describeString = Expression.Call(Expression.Constant(descriptor), typeof(IComplexObjectDescriptor).GetMethod("Describe"), new Expression[] { valueProperty });
+
+                //Get the real type object to map against
+                var result = Expression.Convert(output, destinationObject.GetType());
+                //Get the property to assign
+                var resultProperty = Expression.Property(result, propertyPath.Item1);
+
+                //Assign the property from the source property to the result property
+                var assignExpression = Expression.Assign(resultProperty, describeString);
+
+                return assignExpression;
+            }
+            else
+            {
+
+                //Get the real type object to map against
+                var result = Expression.Convert(output, destinationObject.GetType());
+                //Get the property to assign
+                var resultProperty = Expression.Property(result, propertyPath.Item1);
+
+                //Assign the property from the source property to the result property
+                var assignExpression = Expression.Assign(resultProperty, valueProperty);
+
+                return assignExpression;
+            }
+        }
+
+        /*
         private Expression getPropertyMapExpression(object item, object destinationObject, Tuple<string, List<PropertyInfoEx>> propertyPath,
                                                             ParameterExpression input, ParameterExpression output)
         {
@@ -112,6 +166,6 @@ namespace FlatDTO.Mapper
             }
 
             return null;
-        }
+        }*/
     }
 }
