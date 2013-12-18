@@ -88,6 +88,7 @@ namespace UnitTest.MapperEngineWithRepeater
         {
             // Arrange
             var mapper = CreateMapper<BasicArrayElement<BasicElement<string>>>(new[] { "Collection.Element" });
+
             var objectToMap = new BasicArrayElement<BasicElement<string>>
                 {
                     Collection =

@@ -53,10 +53,13 @@
     <Compile Include="Exception\PropertyIsNotSimpleTypeException.cs" />
     <Compile Include="Exception\PropertyDoNotExistException.cs" />
     <Compile Include="FlatDTOFactory.cs" />
+    <Compile Include="IComplexObjectDescriptor.cs" />
     <Compile Include="IDTOMapperInfo.cs" />
     <Compile Include="IDTOMapper.cs" />
     <Compile Include="IMapperEngine.cs" />
     <Compile Include="MapperEngine.cs" />
+    <Compile Include="Mapper\FlatMapper.cs" />
+    <Compile Include="Mapper\FlatMapperWithRepeater.cs" />
     <Compile Include="MappingEngine\FlatMapperEngine.cs" />
     <Compile Include="MappingEngine\FlatMapperEngineWithRepeater.cs" />
     <Compile Include="PolymorficTypeConverterInstruction.cs" />

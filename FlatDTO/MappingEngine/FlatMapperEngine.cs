@@ -13,6 +13,8 @@ namespace FlatDTO
         private AssemblyBuilder _assemblyBuilder;
         private ModuleBuilder _moduleBuilder;
 
+        public FlatMapperEngine() {}
+        public FlatMapperEngine(IEnumerable<IComplexObjectDescriptor> descriptors) : base(descriptors) { }
 
         private ModuleBuilder ModuleBuilder
         {
@@ -35,9 +37,9 @@ namespace FlatDTO
             var moduleBuilder = ModuleBuilder;
 
             //Define the type
-            var typeBuilder = moduleBuilder.DefineType(objectFullName, System.Reflection.TypeAttributes.Public, typeof(BaseClass.DTOMapper<T>));
+            var typeBuilder = moduleBuilder.DefineType(objectFullName, System.Reflection.TypeAttributes.Public, typeof(Mapper.FlatMapper<T>));
 
-            var unMapMethodBuilder = typeBuilder.DefineMethod("Map", System.Reflection.MethodAttributes.Public | System.Reflection.MethodAttributes.ReuseSlot |
+            var unMapMethodBuilder = typeBuilder.DefineMethod("ILMap", System.Reflection.MethodAttributes.Public | System.Reflection.MethodAttributes.ReuseSlot |
                                             System.Reflection.MethodAttributes.Virtual | System.Reflection.MethodAttributes.HideBySig,
                                             typeof(object), new Type[] { typeof(object), typeof(object) });
 
@@ -52,10 +54,9 @@ namespace FlatDTO
 
             var type = typeBuilder.CreateType();
 
-            var objectToRun = (BaseClass.DTOMapper<T>)Activator.CreateInstance(type);
+            var objectToRun = (Mapper.FlatMapper<T>)Activator.CreateInstance(type);
 
-            objectToRun.SourceType = sourceType;
-            objectToRun.DestinationType = destinationType;
+            objectToRun.Init(sourceType, destinationType, properties);
 
             return objectToRun;
         }
@@ -84,6 +85,9 @@ namespace FlatDTO
             //Get the properties to use
             foreach (var propertyList in properties.Where(x => !x.Item2.Exists(y => y.IsCollection)))
             {
+                if (propertyList.Item2.Last().HasComplexObjectDescriptor)
+                    continue;
+
                 //Load the source type
                 il.Emit(OpCodes.Ldloc_1);
                 //Load the destination type
@@ -98,6 +102,7 @@ namespace FlatDTO
                     if (property.IsPolyMorfic)
                         il.Emit(OpCodes.Castclass, property.Type);
                 }
+
                 //Set the value
                 il.Emit(OpCodes.Callvirt, destinationType.GetProperty(propertyList.Item1).GetSetMethod());
             }
@@ -157,7 +162,10 @@ namespace FlatDTO
                     var attributes = new List<KeyValuePair<Type, object[]>>();
                     attributes.Add(new KeyValuePair<Type, object[]>(typeof(System.Runtime.Serialization.DataMemberAttribute), new object[]{}));
                     //Build the property
-                    buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().Type, attributes);
+                    if(prop.Item2.Last().HasComplexObjectDescriptor)
+                        buildProperty(typeBuilder, prop.Item1, typeof(string), attributes);
+                    else
+                        buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().Type, attributes);
                 }
             }
 

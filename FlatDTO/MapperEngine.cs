@@ -9,7 +9,16 @@ namespace FlatDTO
 {
     public abstract class MapperEngine: IMapperEngine
     {
+        protected List<IComplexObjectDescriptor> _descriptors;
         private string _typeName;
+
+        public MapperEngine() { }
+
+        public MapperEngine(IEnumerable<IComplexObjectDescriptor> descriptors = null)
+        {
+            if(descriptors != null)
+                _descriptors = descriptors.ToList();
+        }
 
         public BaseClass.DTOMapper<T> Create<T>(Type type, string[] properties, List<PolymorficTypeConverterInstruction> manualPolymorficConverter, string key)
         {
@@ -72,8 +81,15 @@ namespace FlatDTO
 
                     if (propertyInfo != null && IsCollectionType(propertyInfo.PropertyType))
                     {
-                        listType = propertyInfo.PropertyType.GetProperty("Item").PropertyType;
-                        //throw new System.Exception("Collection type found at: " + propertyInfo.Name + " " + listType.Name);
+                        try
+                        {
+                            listType = propertyInfo.PropertyType.GetProperty("Item").PropertyType;
+                            //throw new System.Exception("Collection type found at: " + propertyInfo.Name + " " + listType.Name);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            throw new NotSupportedException("It seems like there are simple list types specified. That is not supported", ex);
+                        }
                     }
 
                     if (propertyInfo == null)
@@ -85,19 +101,20 @@ namespace FlatDTO
                         propertyEx = PropertyInfoEx.CreatePolymorficProperty(propertyInfo, polymorficType.ConvertToType);
                     else if (listType != null)
                         propertyEx = PropertyInfoEx.CreateCollectionProperty(propertyInfo, listType);
+                    else if (HasComplexObjectDescriptor(propertyInfo.PropertyType))
+                        propertyEx = PropertyInfoEx.CreateComplexObjectDescriptorProperty(propertyInfo, _descriptors.Where(x => x.RealTypeOfObject == propertyInfo.PropertyType).FirstOrDefault());
                     else
                         propertyEx = new PropertyInfoEx(propertyInfo);
 
                     propertyInfoList.Add(propertyEx);
 
                     activeType = propertyEx.Type;
-
                 }
 
                 var leafProperty = propertyInfoList.Last();
 
-                if (!IsSimpleType(leafProperty.SystemProperty.PropertyType))
-                    throw new Exception.PropertyIsNotSimpleTypeException(leafProperty.SystemProperty.Name, activeType, path);
+                if (!IsSimpleType(leafProperty.SystemProperty.PropertyType) && !leafProperty.HasComplexObjectDescriptor)
+                    throw new Exception.PropertyIsNotSimpleTypeException(leafProperty.SystemProperty.Name, leafProperty.Type, activeType, path);
 
                 result.Add(new Tuple<string, List<PropertyInfoEx>>(key, propertyInfoList));
             }
@@ -115,6 +132,13 @@ namespace FlatDTO
                 return true;
             }
             return false;
+        }
+        public bool HasComplexObjectDescriptor(Type type)
+        {
+            if (_descriptors == null)
+                return false;
+            else
+                return _descriptors.Exists(x => x.RealTypeOfObject == type);
         }
 
         protected static bool IsSimpleType(Type type)

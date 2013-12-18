@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FlatDTO;
 
 namespace UnitTest.Mockup
 {
@@ -127,6 +128,37 @@ namespace UnitTest.Mockup
         public class ComplexPropertyLevel2
         {
             public string StringValue { get; set; }
+        }
+
+        public class ComplexPropertyDescriptor : IComplexObjectDescriptor
+        {
+            private Type _realType;
+
+            public ComplexPropertyDescriptor(Type connectToType)
+            {
+                _realType = connectToType;
+            }
+
+            public Type RealTypeOfObject
+            {
+                get { return _realType; }
+            }
+
+            public virtual string Describe(object @object)
+            {
+                var complex = (ComplexPropertyLevel1)@object;
+                return complex.StringValue + "ComplexPropertyDescriptor";
+            }
+        }
+
+        public class ComplexPropertyLevel2Descriptor: ComplexPropertyDescriptor
+        {
+            public ComplexPropertyLevel2Descriptor(Type connectToType): base(connectToType){}
+            public override string Describe(object @object)
+            {
+                var complex2 = (ComplexPropertyLevel2)@object;
+                return complex2.StringValue + "ComplexPropertyLevel2Descriptor";
+            }
         }
     }
 }

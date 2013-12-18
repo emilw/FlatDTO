@@ -14,6 +14,8 @@ namespace FlatDTO
 
         public Type ItemType = null;
 
+        public IComplexObjectDescriptor ComplexObjectDescriptor { get; set; }
+
         public static PropertyInfoEx CreateCollectionProperty(PropertyInfo propertyInfo, Type itemType)
         {
             var result = new PropertyInfoEx(propertyInfo);
@@ -28,10 +30,28 @@ namespace FlatDTO
             return result;
         }
 
+        public static PropertyInfoEx CreateComplexObjectDescriptorProperty(PropertyInfo propertyInfo, IComplexObjectDescriptor complexObjectDescriptor)
+        {
+            var result = new PropertyInfoEx(propertyInfo);
+            result.ComplexObjectDescriptor = complexObjectDescriptor;
+            return result;
+        }
+
 
         public PropertyInfoEx(PropertyInfo propertyInfo)
         {
             _systemProperty = propertyInfo;
+        }
+
+        public bool HasComplexObjectDescriptor
+        {
+            get
+            {
+                if (ComplexObjectDescriptor == null)
+                    return false;
+                else
+                    return true;
+            }
         }
 
         public bool IsPolyMorfic

@@ -9,9 +9,9 @@ namespace FlatDTO.Exception
     {
         string _message;
 
-        public PropertyIsNotSimpleTypeException(string propertyName, Type type, string fullPath)
+        public PropertyIsNotSimpleTypeException(string propertyName, Type propertyType, Type type, string fullPath)
         {
-             _message = string.Format("The property {0} is not a primitive type on parent type {1}. Full property path used {2}", propertyName, type, fullPath);
+             _message = string.Format("The property {0} with type {1} is not a primitive type on parent type {2} or it have no appropriate descriptor defined. Full property path used {3}", propertyName, propertyType, type, fullPath);
         }
 
         public override string Message
