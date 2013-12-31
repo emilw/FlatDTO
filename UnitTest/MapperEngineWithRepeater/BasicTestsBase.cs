@@ -36,10 +36,10 @@ namespace UnitTest.MapperEngineWithRepeater
 
         #region Protected Helper Methods
 
-        protected DTOMapper<Data.DTOBaseEmpty> CreateMapper<T>(string[] paths)
+        protected DTOMapper<Data.DTOBaseEmpty> CreateMapper<T>(string[] paths, IComplexObjectDescriptor[] descriptors = null)
         {
             var factory = new FlatDTOFactory();
-            var engine = new FlatMapperEngineWithRepeater();
+            var engine = new FlatMapperEngineWithRepeater(descriptors);
             var mapper = factory.Create<Data.DTOBaseEmpty>(typeof (T), paths, engine);
 
             return mapper;

@@ -51,8 +51,11 @@
     <Compile Include="MapperEngineWithRepeater\BasicCollectionGenericPathMappingTests.cs" />
     <Compile Include="MapperEngineWithRepeater\BasicCollectionGenericMappingTests.cs" />
     <Compile Include="MapperEngineWithRepeater\BasicCollectionPathMappingTests.cs" />
+    <Compile Include="MapperEngineWithRepeater\BasicEmptyCollectionTests.cs" />
     <Compile Include="MapperEngineWithRepeater\BasicMappingTests.cs" />
     <Compile Include="MapperEngineWithRepeater\BasicTestsBase.cs" />
+    <Compile Include="MapperEngineWithRepeater\ComplexPropertyDescriptorTests.cs" />
+    <Compile Include="MapperEngineWithRepeater\MultipleCollectionPathMappingTests.cs" />
     <Compile Include="Mockup\Data.cs" />
     <Compile Include="Mockup\DummyMapperEngine.cs" />
     <Compile Include="Mockup\ObjectListMapper.cs" />
