@@ -38,58 +38,6 @@ namespace FlatDTO.Mapper
                 throw new Exception.MultipleListItemInstructionsException(collectionPropertyInfo.Select(x => x.SystemProperty.Name).Distinct().ToArray());
         }
 
-        /*private Expression getPropertyMapExpression(object item, object destinationObject, Tuple<string, List<PropertyInfoEx>> propertyPath,
-                                                    ParameterExpression input, ParameterExpression output)
-        {
-            var valueLine = Expression.Convert(input, item.GetType());
-
-            Expression valueProperty = valueLine;
-            IComplexObjectDescriptor descriptor = null;
-
-            //Get the property from the source, iterate to the end of the list, it's ordered
-            foreach (var property in propertyPath.Item2)
-            {
-                if (!property.IsCollection)
-                {
-                    valueProperty = Expression.PropertyOrField(valueProperty, property.SystemProperty.Name);
-                }
-            }
-
-            if (propertyPath.Item2.Last().HasComplexObjectDescriptor)
-            {
-                descriptor = propertyPath.Item2.Last().ComplexObjectDescriptor;
-            }
-
-            if (descriptor != null)
-            {
-
-                var describeString = Expression.Call(Expression.Constant(descriptor), typeof(IComplexObjectDescriptor).GetMethod("Describe"), new Expression[] { valueProperty });
-
-                //Get the real type object to map against
-                var result = Expression.Convert(output, destinationObject.GetType());
-                //Get the property to assign
-                var resultProperty = Expression.Property(result, propertyPath.Item1);
-
-                //Assign the property from the source property to the result property
-                var assignExpression = Expression.Assign(resultProperty, describeString);
-
-                return assignExpression;
-            }
-            else
-            {
-
-                //Get the real type object to map against
-                var result = Expression.Convert(output, destinationObject.GetType());
-                //Get the property to assign
-                var resultProperty = Expression.Property(result, propertyPath.Item1);
-
-                //Assign the property from the source property to the result property
-                var assignExpression = Expression.Assign(resultProperty, valueProperty);
-
-                return assignExpression;
-            }
-        }*/
-
         public override object Map(object sourceDataObject, object destinationObject)
         {
             if (CollectionProperties.Count == 0)
@@ -106,22 +54,31 @@ namespace FlatDTO.Mapper
 
                     var itemsToMap = GetItemsToMap(sourceDataObject, prop);
 
-                    foreach (var item in itemsToMap)
+                    if (itemsToMap == null || itemsToMap.Count() == 0)
                     {
-                        destinationObject = Activator.CreateInstance(destinationObject.GetType());
-                        destinationObject = ItemMapper.Map(sourceDataObject, destinationObject);
-                        try
-                        {
-                            var listMap = GetListMap(item, destinationObject);
+                        var dest = ItemMapper.Map(sourceDataObject, destinationObject);
 
-                            listMap(item, destinationObject);
-
-                            list.Add((T)destinationObject);
-                        }
-                        catch (System.Exception ex)
+                        list.Add((T)dest);
+                    }
+                    else
+                    {
+                        foreach (var item in itemsToMap)
                         {
-                            string Message = string.Format("Problem with list mapper, more: {0}", ex.Message);
-                            throw new System.Exception(Message, ex);
+                            destinationObject = Activator.CreateInstance(destinationObject.GetType());
+                            destinationObject = ItemMapper.Map(sourceDataObject, destinationObject);
+                            try
+                            {
+                                var listMap = GetListMap(item, destinationObject);
+
+                                listMap(item, destinationObject);
+
+                                list.Add((T)destinationObject);
+                            }
+                            catch (System.Exception ex)
+                            {
+                                string Message = string.Format("Problem with list mapper, more: {0}", ex.Message);
+                                throw new System.Exception(Message, ex);
+                            }
                         }
                     }
 
@@ -138,7 +95,6 @@ namespace FlatDTO.Mapper
 
         private IEnumerable<object> GetItemsToMap(object sourceDataObject, Tuple<string, List<PropertyInfoEx>> propertyPath)
         {
-            //if (ItemsToMap == null)
             if (ItemsToMapFunc == null)
             {
                 try
