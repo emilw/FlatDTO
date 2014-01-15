@@ -10,7 +10,8 @@ namespace UnitTest.MapperEngineWithRepeater
     {
         #region Private Constants
 
-        private const string CustomDescription = "custom description";
+        private const string ComplexObjectCustomDescription = "custom description";
+        private const string BasicElementWithComplexObjectCustomDescription = "custom description";
 
         #endregion Private Constants
 
@@ -37,7 +38,20 @@ namespace UnitTest.MapperEngineWithRepeater
 
             public string Describe(object @object)
             {
-                return CustomDescription;
+                return ComplexObjectCustomDescription;
+            }
+        }
+
+        public class BasicElementMapper : IComplexObjectDescriptor
+        {
+            public bool HandlesType(Type type)
+            {
+                return type == typeof(BasicElement<ComplexObject>);
+            }
+
+            public string Describe(object @object)
+            {
+                return BasicElementWithComplexObjectCustomDescription;
             }
         }
 
@@ -49,11 +63,19 @@ namespace UnitTest.MapperEngineWithRepeater
         {
             Assert.AreEqual("String", GetMappedPathFromCollection(mapping, 0, "String"));
             Assert.AreEqual(567, GetMappedPathFromCollection(mapping, 0, "Int"));
-            Assert.AreEqual(CustomDescription, GetMappedPathFromCollection(mapping, 0, "Collection.Element"));
+            Assert.AreEqual(ComplexObjectCustomDescription, GetMappedPathFromCollection(mapping, 0, "Collection.Element"));
 
             Assert.AreEqual("String", GetMappedPathFromCollection(mapping, 1, "String"));
             Assert.AreEqual(567, GetMappedPathFromCollection(mapping, 1, "Int"));
-            Assert.AreEqual(CustomDescription, GetMappedPathFromCollection(mapping, 1, "Collection.Element"));
+            Assert.AreEqual(ComplexObjectCustomDescription, GetMappedPathFromCollection(mapping, 1, "Collection.Element"));
+        }
+
+        void AssertCollectionMapping(object mapping)
+        {
+            Assert.AreEqual(BasicElementWithComplexObjectCustomDescription,
+                            GetMappedPathFromCollection(mapping, 0, "Collection"));
+            Assert.AreEqual(BasicElementWithComplexObjectCustomDescription,
+                            GetMappedPathFromCollection(mapping, 1, "Collection"));
         }
 
         #endregion Private Helper Methods
@@ -92,6 +114,42 @@ namespace UnitTest.MapperEngineWithRepeater
 
             // Assert
             AssertProperMapping(mapping);
+        }
+
+        [TestMethod]
+        public void ShouldProperlyMapCollectionOfComplexObjects()
+        {
+            // Arrange
+            var mapper = CreateMapper<ComplexObjectHolder>(new[]
+                {
+                    "Collection.Element",
+                    "Collection",
+                    "String",
+                    "Int"
+                }, new IComplexObjectDescriptor[] {new ComplexObjectMapper(), new BasicElementMapper()});
+            var objectToMap = new ComplexObjectHolder
+            {
+                Collection = new List<BasicElement<ComplexObject>>
+                        {
+                            new BasicElement<ComplexObject>
+                                {
+                                    Element = new ComplexObject()
+                                },
+                            new BasicElement<ComplexObject>
+                                {
+                                    Element = new ComplexObject()
+                                }
+                        },
+                String = "String",
+                Int = 567
+            };
+
+            // Act
+            var mapping = mapper.Map(new object[] { objectToMap });
+
+            // Assert
+            AssertProperMapping(mapping);
+            AssertCollectionMapping(mapping);
         }
 
         #endregion Test Cases
