@@ -165,7 +165,7 @@ namespace FlatDTO
                     if(prop.Item2.Last().HasComplexObjectDescriptor)
                         buildProperty(typeBuilder, prop.Item1, typeof(string), attributes);
                     else
-                        buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().Type, attributes);
+                        buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().PropertyType, attributes);
                 }
             }
 

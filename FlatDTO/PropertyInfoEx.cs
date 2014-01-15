@@ -16,27 +16,20 @@ namespace FlatDTO
 
         public IComplexObjectDescriptor ComplexObjectDescriptor { get; set; }
 
-        public static PropertyInfoEx CreateCollectionProperty(PropertyInfo propertyInfo, Type itemType)
+        public void SetToCollectionProperty(Type itemType)
         {
-            var result = new PropertyInfoEx(propertyInfo);
-            result.ItemType = itemType;
-            return result;
+            this.ItemType = itemType;
         }
 
-        public static PropertyInfoEx CreatePolymorficProperty(PropertyInfo propertyInfo, Type polymorficType)
+        public void SetToPolymorficProperty(Type polymorficType)
         {
-            var result = new PropertyInfoEx(propertyInfo);
-            result.PolymorficType = polymorficType;
-            return result;
+            this.PolymorficType = polymorficType;
         }
 
-        public static PropertyInfoEx CreateComplexObjectDescriptorProperty(PropertyInfo propertyInfo, IComplexObjectDescriptor complexObjectDescriptor)
+        public void SetToComplexObjectDescriptorProperty(IComplexObjectDescriptor complexObjectDescriptor)
         {
-            var result = new PropertyInfoEx(propertyInfo);
-            result.ComplexObjectDescriptor = complexObjectDescriptor;
-            return result;
+            this.ComplexObjectDescriptor = complexObjectDescriptor;
         }
-
 
         public PropertyInfoEx(PropertyInfo propertyInfo)
         {
@@ -87,6 +80,41 @@ namespace FlatDTO
                     return SystemProperty.PropertyType;
             }
         }
+
+        public Type PropertyType
+        {
+            get
+            {
+                return SystemProperty.PropertyType;// GetNullableType(SystemProperty.PropertyType);
+            }
+        }
+
+        private static Type GetNullableType(Type type)
+        {
+            if(type == typeof(int)){
+                return typeof(int?);
+            }
+            else if(type == typeof(long)){
+                return typeof(long?);
+            }
+            else if(type == typeof(DateTime)){
+                return typeof(DateTime?);
+            }
+            else if(type == typeof(decimal)){
+                return typeof(decimal?);
+            }
+            else if(type == typeof(bool)){
+                return typeof(bool?);
+            }
+            else if (type == typeof(Guid)){
+                return typeof(Guid?);
+            }
+            else{
+                return type;
+            }
+
+        }
+
         public PropertyInfo SystemProperty
         {
             get

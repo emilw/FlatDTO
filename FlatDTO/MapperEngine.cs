@@ -95,16 +95,23 @@ namespace FlatDTO
                     if (propertyInfo == null)
                         throw new Exception.PropertyDoNotExistException(property, activeType, path);
 
-                    PropertyInfoEx propertyEx = null;
+                    PropertyInfoEx propertyEx = new PropertyInfoEx(propertyInfo);
 
                     if (polymorficType != null)
-                        propertyEx = PropertyInfoEx.CreatePolymorficProperty(propertyInfo, polymorficType.ConvertToType);
-                    else if (listType != null)
-                        propertyEx = PropertyInfoEx.CreateCollectionProperty(propertyInfo, listType);
-                    else if (HasComplexObjectDescriptor(propertyInfo.PropertyType))
-                        propertyEx = PropertyInfoEx.CreateComplexObjectDescriptorProperty(propertyInfo, _descriptors.Where(x => x.HandlesType(propertyInfo.PropertyType)).FirstOrDefault());
-                    else
-                        propertyEx = new PropertyInfoEx(propertyInfo);
+                        propertyEx.SetToPolymorficProperty(polymorficType.ConvertToType);
+
+                    if (listType != null)
+                    {
+                        propertyEx.SetToCollectionProperty(listType);
+
+                        if (HasComplexObjectDescriptor(listType))
+                            propertyEx.SetToComplexObjectDescriptorProperty(_descriptors.Where(x => x.HandlesType(listType)).FirstOrDefault());
+
+                    }
+                    
+                    if (HasComplexObjectDescriptor(propertyInfo.PropertyType))
+                        propertyEx.SetToComplexObjectDescriptorProperty(_descriptors.Where(x => x.HandlesType(propertyInfo.PropertyType)).FirstOrDefault());
+
 
                     propertyInfoList.Add(propertyEx);
 
