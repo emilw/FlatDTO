@@ -10,8 +10,8 @@ namespace UnitTest.MapperEngineWithRepeater
     {
         #region Private Constants
 
-        private const string ComplexObjectCustomDescription = "custom description";
-        private const string BasicElementWithComplexObjectCustomDescription = "custom description";
+        private const string ComplexObjectCustomDescription = "complex object";
+        private const string BasicElementWithComplexObjectCustomDescription = "basic element";
 
         #endregion Private Constants
 
@@ -27,6 +27,11 @@ namespace UnitTest.MapperEngineWithRepeater
             public string String { get; set; }
 
             public int Int { get; set; }
+        }
+
+        public class DeepStructure
+        {
+            public ComplexObjectHolder ComplexObjectHolder { get; set; }
         }
 
         public class ComplexObjectMapper : IComplexObjectDescriptor
@@ -150,6 +155,45 @@ namespace UnitTest.MapperEngineWithRepeater
             // Assert
             AssertProperMapping(mapping);
             AssertCollectionMapping(mapping);
+        }
+
+        [TestMethod]
+        public void ShouldProperlyMapDeepStructureWithCollectionOfComplexObjects()
+        {
+            // Arrange
+            var mapper = CreateMapper<DeepStructure>(new[]
+                {
+                    "ComplexObjectHolder.Collection.Element",
+                    "ComplexObjectHolder.Collection",
+                    "ComplexObjectHolder.String",
+                    "ComplexObjectHolder.Int"
+                }, new IComplexObjectDescriptor[] { new ComplexObjectMapper(), new BasicElementMapper() });
+            var objectToMap = new DeepStructure
+                {
+                    ComplexObjectHolder = new ComplexObjectHolder
+                        {
+                            Collection = new List<BasicElement<ComplexObject>>
+                                {
+                                    new BasicElement<ComplexObject>
+                                        {
+                                            Element = new ComplexObject()
+                                        },
+                                    new BasicElement<ComplexObject>
+                                        {
+                                            Element = new ComplexObject()
+                                        }
+                                },
+                            String = "String",
+                            Int = 567
+                        }
+                };
+
+            // Act
+            var mapping = mapper.Map(new object[] { objectToMap });
+
+            // Assert
+            Assert.AreEqual(BasicElementWithComplexObjectCustomDescription,
+                            GetMappedPathFromCollection(mapping, 1, "ComplexObjectHolder.Collection"));
         }
 
         #endregion Test Cases
