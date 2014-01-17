@@ -43,6 +43,7 @@ namespace UnitTest.MapperEngineWithRepeater
 
             public string Describe(object @object)
             {
+                if (!(@object is ComplexObject)) throw new InvalidOperationException();
                 return ComplexObjectCustomDescription;
             }
         }
@@ -56,6 +57,7 @@ namespace UnitTest.MapperEngineWithRepeater
 
             public string Describe(object @object)
             {
+                if (!(@object is BasicElement<ComplexObject>)) throw new InvalidOperationException();
                 return BasicElementWithComplexObjectCustomDescription;
             }
         }
