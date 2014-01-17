@@ -94,6 +94,7 @@ namespace UnitTest.MapperEngineWithRepeater
             public ElementWithString[] Collection { get; set; }
         }
 
+        [Ignore]//For now
         [TestMethod]
         public void MapPathToIntegerInArrayCollectionOfGenericElement()
         {
@@ -117,6 +118,7 @@ namespace UnitTest.MapperEngineWithRepeater
             Assert.AreEqual(5, GetMappedPathFromCollection(mapping, 4, "Collection.Element"));
         }
 
+        [Ignore]//For now
         [TestMethod]
         public void MapPathToStringInArrayCollectionOfGenericElement()
         {

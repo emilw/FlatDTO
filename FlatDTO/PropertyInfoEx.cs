@@ -85,7 +85,28 @@ namespace FlatDTO
         {
             get
             {
-                return SystemProperty.PropertyType;// GetNullableType(SystemProperty.PropertyType);
+                return SystemProperty.PropertyType;
+                //return GetNullableType(SystemProperty.PropertyType);
+            }
+        }
+
+        public static bool IsNullable(Type type)
+        {
+            return nullableTypes.Contains(type);
+        }
+
+        private static Type[] nullableTypes
+        {
+            get
+            {
+                return new Type[]
+                {
+                    typeof(int?),
+                    typeof(DateTime?),
+                    typeof(decimal?),
+                    typeof(bool?),
+                    typeof(Guid?)
+                };
             }
         }
 

@@ -104,13 +104,13 @@ namespace FlatDTO
                     {
                         propertyEx.SetToCollectionProperty(listType);
 
-                        if (HasComplexObjectDescriptor(listType))
-                            propertyEx.SetToComplexObjectDescriptorProperty(_descriptors.Where(x => x.HandlesType(listType)).FirstOrDefault());
+                        //if (HasComplexObjectDescriptor(listType))
+                        //    propertyEx.SetToComplexObjectDescriptorProperty(_descriptors.Where(x => x.HandlesType(listType)).FirstOrDefault());
 
                     }
                     
-                    if (HasComplexObjectDescriptor(propertyInfo.PropertyType))
-                        propertyEx.SetToComplexObjectDescriptorProperty(_descriptors.Where(x => x.HandlesType(propertyInfo.PropertyType)).FirstOrDefault());
+                   // if (HasComplexObjectDescriptor(propertyInfo.PropertyType))
+                   //     propertyEx.SetToComplexObjectDescriptorProperty(_descriptors.Where(x => x.HandlesType(propertyInfo.PropertyType)).FirstOrDefault());
 
 
                     propertyInfoList.Add(propertyEx);
@@ -119,6 +119,17 @@ namespace FlatDTO
                 }
 
                 var leafProperty = propertyInfoList.Last();
+
+                if (HasComplexObjectDescriptor(leafProperty.PropertyType) || HasComplexObjectDescriptor(leafProperty.ItemType))
+                {
+                    Type typeToCheck = null;
+                    typeToCheck = leafProperty.PropertyType;
+
+                    if (leafProperty.ItemType != null)
+                        typeToCheck = leafProperty.ItemType;
+
+                    leafProperty.SetToComplexObjectDescriptorProperty(_descriptors.Where(x => x.HandlesType(typeToCheck)).FirstOrDefault());
+                }
 
                 if (!IsSimpleType(leafProperty.SystemProperty.PropertyType) && !leafProperty.HasComplexObjectDescriptor)
                     throw new Exception.PropertyIsNotSimpleTypeException(leafProperty.SystemProperty.Name, leafProperty.Type, activeType, path);

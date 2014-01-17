@@ -9,7 +9,9 @@ namespace FlatDTO.Mapper
     public class FlatMapper<T> : FlatDTO.BaseClass.DTOMapper<T>
     {
         List<Tuple<string, List<PropertyInfoEx>>> ComplexObjectDescriptor = new List<Tuple<string, List<PropertyInfoEx>>>();
-        Action<object, object> MapComplexObjectAction;
+//        Action<object, object> MapComplexObjectAction;
+
+        Dictionary<string, Action<object, object>> MapComplexObjectDictionary = new Dictionary<string,Action<object,object>>();
 
         public FlatMapper()
         {
@@ -42,22 +44,27 @@ namespace FlatDTO.Mapper
             throw new NotImplementedException("ILMap is not implemented");
         }
 
-        private object ExpMap(object soruceDataObject, object destinationObject)
+        protected object ExpMap(object soruceDataObject, object destinationObject)
         {
             if (ComplexObjectDescriptor.Count() > 0)
-                return MapComplexObject(soruceDataObject, destinationObject);
+                return MapComplexObject(soruceDataObject, destinationObject, this.ComplexObjectDescriptor);
             else
                 return destinationObject;
         }
 
-        private object MapComplexObject(object sourceDataObject, object destinationObject)
+        protected object MapComplexObject(object sourceDataObject, object destinationObject, List<Tuple<string, List<PropertyInfoEx>>> propertiesToMap)
         {
+            var key = sourceDataObject.GetType().FullName;
+            Action<object, object> MapComplexObjectAction = null;
+
+            MapComplexObjectDictionary.TryGetValue(key, out MapComplexObjectAction);
+
             if (MapComplexObjectAction == null)
             {
                 List<Expression> expression = new List<Expression>();
                 var inputValueLine = Expression.Parameter(typeof(object));
                 var inputResult = Expression.Parameter(typeof(object));
-                foreach (var propertyPath in this.ComplexObjectDescriptor)
+                foreach (var propertyPath in propertiesToMap.Where(x => x.Item2.Exists(y => y.HasComplexObjectDescriptor)))
                 {
                     expression.Add(getPropertyMapExpression(sourceDataObject, destinationObject, propertyPath, inputValueLine, inputResult));
                 }
@@ -65,6 +72,7 @@ namespace FlatDTO.Mapper
                 var expressionBlock = Expression.Block(expression);
 
                 MapComplexObjectAction = Expression.Lambda<Action<object, object>>(expressionBlock, inputValueLine, inputResult).Compile();
+                MapComplexObjectDictionary.Add(key, MapComplexObjectAction);
             }
 
             MapComplexObjectAction(sourceDataObject,destinationObject);
@@ -84,15 +92,22 @@ namespace FlatDTO.Mapper
             //Get the property from the source, iterate to the end of the list, it's ordered
             foreach (var property in propertyPath.Item2)
             {
-                if (!property.IsCollection)
+
+                if (property.IsCollection && property.HasComplexObjectDescriptor)
+                {
+                    valueProperty = Expression.Constant(valueLine);
+                }
+                else
                 {
                     valueProperty = Expression.PropertyOrField(valueProperty, property.SystemProperty.Name);
                 }
-            }
 
-            if (propertyPath.Item2.Last().HasComplexObjectDescriptor)
-            {
-                descriptor = propertyPath.Item2.Last().ComplexObjectDescriptor;
+                if (property.IsPolyMorfic)
+                {
+                    valueProperty = Expression.Convert(valueProperty, property.PolymorficType);
+                }
+                
+                descriptor = property.ComplexObjectDescriptor;
             }
 
             if (descriptor != null)

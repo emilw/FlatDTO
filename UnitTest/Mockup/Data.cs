@@ -144,8 +144,15 @@ namespace UnitTest.Mockup
                 return _realType == type;
             }
 
+            protected void checkAndThrow(object @object)
+            {
+                if (!HandlesType(@object.GetType()))
+                    throw new Exception(string.Format("The object type: {0} can not be handled by the descriptor {1}", @object.GetType().FullName, this.GetType().FullName));
+            }
+
             public virtual string Describe(object @object)
             {
+                checkAndThrow(@object);
                 var complex = (ComplexPropertyLevel1)@object;
                 return complex.StringValue + "ComplexPropertyDescriptor";
             }
@@ -156,6 +163,7 @@ namespace UnitTest.Mockup
             public ComplexPropertyLevel2Descriptor(Type connectToType): base(connectToType){}
             public override string Describe(object @object)
             {
+                checkAndThrow(@object);
                 var complex2 = (ComplexPropertyLevel2)@object;
                 return complex2.StringValue + "ComplexPropertyLevel2Descriptor";
             }

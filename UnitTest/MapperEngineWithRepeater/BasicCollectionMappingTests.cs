@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTest.MapperEngineWithRepeater
 {
+    [Ignore]
     [TestClass]
     public class BasicCollectionMappingTests : BasicTestsBase
     {
