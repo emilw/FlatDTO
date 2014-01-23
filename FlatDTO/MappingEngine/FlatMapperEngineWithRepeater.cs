@@ -13,6 +13,7 @@ namespace FlatDTO.MappingEngine
 
         protected override BaseClass.DTOMapper<T> CreateMapper<T>(Type sourceType, Type destinationType, List<Tuple<string, List<PropertyInfoEx>>> properties)
         {
+            this.CreateNullableValueType = true;
             var itemMapper = base.CreateMapper<T>(sourceType, destinationType, properties);
             var mapper = new Mapper.FlatMapperWithRepeater<T>(sourceType, destinationType, properties, itemMapper);
 

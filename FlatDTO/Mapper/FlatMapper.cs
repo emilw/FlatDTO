@@ -133,6 +133,11 @@ namespace FlatDTO.Mapper
                 //Get the property to assign
                 var resultProperty = Expression.Property(result, propertyPath.Item1);
 
+                if (PropertyInfoEx.IsNullable(resultProperty.Type))
+                {
+                    valueProperty = Expression.Convert(valueProperty, resultProperty.Type);
+                    //valueProperty = Expression.PropertyOrField(valueProperty, "Value");
+                }
                 //Assign the property from the source property to the result property
                 var assignExpression = Expression.Assign(resultProperty, valueProperty);
 

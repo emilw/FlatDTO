@@ -12,6 +12,7 @@ namespace FlatDTO
         private string _typeName;
         private AssemblyBuilder _assemblyBuilder;
         private ModuleBuilder _moduleBuilder;
+        public bool CreateNullableValueType = false;
 
         public FlatMapperEngine() {}
         public FlatMapperEngine(IEnumerable<IComplexObjectDescriptor> descriptors) : base(descriptors) { }
@@ -164,8 +165,10 @@ namespace FlatDTO
                     //Build the property
                     if(prop.Item2.Last().HasComplexObjectDescriptor)
                         buildProperty(typeBuilder, prop.Item1, typeof(string), attributes);
-                    else
+                    else if (CreateNullableValueType)
                         buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().PropertyType, attributes);
+                    else
+                        buildProperty(typeBuilder, prop.Item1, prop.Item2.Last().SystemProperty.PropertyType, attributes);
                 }
             }
 

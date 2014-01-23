@@ -85,8 +85,8 @@ namespace FlatDTO
         {
             get
             {
-                return SystemProperty.PropertyType;
-                //return GetNullableType(SystemProperty.PropertyType);
+                //return SystemProperty.PropertyType;
+                return GetNullableType(SystemProperty.PropertyType);
             }
         }
 
