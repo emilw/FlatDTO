@@ -95,7 +95,7 @@ namespace FlatDTO.Mapper
 
                 if (property.IsCollection && property.HasComplexObjectDescriptor)
                 {
-                    valueProperty = Expression.Constant(valueLine);
+                    valueProperty = Expression.Constant(item);
                 }
                 else
                 {
