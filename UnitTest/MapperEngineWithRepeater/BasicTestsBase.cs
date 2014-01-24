@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using FlatDTO;
@@ -11,6 +12,26 @@ namespace UnitTest.MapperEngineWithRepeater
     public class BasicTestsBase
     {
         #region Helper Classes
+
+        public class ElementWithInt
+        {
+            public int Element { get; set; }
+        }
+
+        public class ElementWithString
+        {
+            public string Element { get; set; }
+        }
+
+        public class ElementWithDecimal
+        {
+            public decimal Element { get; set; }
+        }
+
+        public class ElementWithDateTime
+        {
+            public DateTime Element { get; set; }
+        }
 
         public class BasicElement<T>
         {
@@ -47,7 +68,7 @@ namespace UnitTest.MapperEngineWithRepeater
 
         protected object GetMappedPath(object mapping, string path)
         {
-            var property = mapping.GetType().GetProperty(string.Join("_", path.Split('.')));
+            var property = mapping.GetType().GetProperty(String.Join("_", path.Split('.')));
 
             if (property == null)
             {

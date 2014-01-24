@@ -6,20 +6,6 @@ namespace UnitTest.MapperEngineWithRepeater
     [TestClass]
     public class BasicCollectionPathMappingTests : BasicTestsBase
     {
-        #region Private Helper Classes
-
-        public class ElementWithInt
-        {
-            public int Element { get; set; }
-        }
-
-        public class ElementWithString
-        {
-            public string Element { get; set; }
-        }
-
-        #endregion Private Helper Classes
-
         #region Basic Types Paths In List Test Cases
 
         public class ListCollectionOfElementsWithInt
@@ -145,6 +131,5 @@ namespace UnitTest.MapperEngineWithRepeater
         }
 
         #endregion Basic Types Paths In Array Test Cases
-
     }
 }
