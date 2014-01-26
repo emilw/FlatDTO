@@ -8,12 +8,17 @@ namespace FlatDTO.MappingEngine
 {
     public class FlatMapperEngineWithRepeater : FlatMapperEngine
     {
-        public FlatMapperEngineWithRepeater() { }
-        public FlatMapperEngineWithRepeater(IEnumerable<IComplexObjectDescriptor> descriptors) : base(descriptors) {}
+        public FlatMapperEngineWithRepeater(bool createNullableEquivalent = true) {
+            this.CreateNullableValueType = createNullableEquivalent;
+        }
+        public FlatMapperEngineWithRepeater(IEnumerable<IComplexObjectDescriptor> descriptors, bool createNullableEquivalent = true)
+            : base(descriptors)
+        {
+            this.CreateNullableValueType = createNullableEquivalent;
+        }
 
         protected override BaseClass.DTOMapper<T> CreateMapper<T>(Type sourceType, Type destinationType, List<Tuple<string, List<PropertyInfoEx>>> properties)
         {
-            this.CreateNullableValueType = true;
             var itemMapper = base.CreateMapper<T>(sourceType, destinationType, properties);
             var mapper = new Mapper.FlatMapperWithRepeater<T>(sourceType, destinationType, properties, itemMapper);
 
